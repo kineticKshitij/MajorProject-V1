@@ -1,0 +1,182 @@
+{% extends 'googledorks/base.html' %}
+{% load static %}
+
+{% block title %}Profile - Google Dorks Toolkit{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="bi bi-person-circle"></i> Profile Overview</h5>
+            </div>
+            <div class="card-body text-center">
+                {% if profile.avatar %}
+                <img src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle mb-3" width="120" height="120">
+                {% else %}
+                <div class="bg-secondary rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
+                    style="width: 120px; height: 120px;">
+                    <i class="bi bi-person text-white" style="font-size: 3rem;"></i>
+                </div>
+                {% endif %}
+
+                <h4>{{ user.get_full_name|default:user.username }}</h4>
+                <p class="text-muted">@{{ user.username }}</p>
+
+                {% if profile.bio %}
+                <p class="small">{{ profile.bio }}</p>
+                {% endif %}
+
+                <div class="mt-3">
+                    <a href="{% url 'accounts:edit_profile' %}" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-pencil"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-robot"></i> AI Assistant Status</h6>
+            </div>
+            <div class="card-body">
+                {% if user.has_gemini_api_key %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i> API Key Configured
+                    <div class="mt-2">
+                        <a href="{% url 'chatbot:home' %}" class="btn btn-success btn-sm">
+                            <i class="bi bi-chat-dots"></i> Start Chat
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> No API Key Set
+                    <div class="mt-2">
+                        <a href="{% url 'accounts:api_key_setup' %}" class="btn btn-warning btn-sm">
+                            <i class="bi bi-key"></i> Setup API Key
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-info-circle"></i> Account Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Basic Information</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Username:</strong></td>
+                                <td>{{ user.username }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ user.email }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Name:</strong></td>
+                                <td>{{ user.get_full_name|default:"Not provided" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Joined:</strong></td>
+                                <td>{{ user.date_joined|date:"M d, Y" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Profile Details</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td><strong>Location:</strong></td>
+                                <td>{{ profile.location|default:"Not specified" }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Language:</strong></td>
+                                <td>{{ profile.get_preferred_language_display }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Timezone:</strong></td>
+                                <td>{{ profile.timezone }}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Notifications:</strong></td>
+                                <td>
+                                    {% if profile.receive_notifications %}
+                                    <span class="badge bg-success">Enabled</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Disabled</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                {% if profile.website or profile.github_profile or profile.linkedin_profile %}
+                <hr>
+                <h6>Links</h6>
+                <div class="d-flex gap-2">
+                    {% if profile.website %}
+                    <a href="{{ profile.website }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                        <i class="bi bi-globe"></i> Website
+                    </a>
+                    {% endif %}
+                    {% if profile.github_profile %}
+                    <a href="{{ profile.github_profile }}" target="_blank" class="btn btn-outline-dark btn-sm">
+                        <i class="bi bi-github"></i> GitHub
+                    </a>
+                    {% endif %}
+                    {% if profile.linkedin_profile %}
+                    <a href="{{ profile.linkedin_profile }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-linkedin"></i> LinkedIn
+                    </a>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5><i class="bi bi-bar-chart"></i> Activity Stats</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="bg-light p-3 rounded">
+                            <h4 class="text-primary">{{ user.dorkbookmark_set.count }}</h4>
+                            <small>Bookmarked Dorks</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="bg-light p-3 rounded">
+                            <h4 class="text-success">{{ user.searchsession_set.count }}</h4>
+                            <small>Search Sessions</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="bg-light p-3 rounded">
+                            <h4 class="text-info">{{ user.chatsession_set.count }}</h4>
+                            <small>Chat Sessions</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="bg-light p-3 rounded">
+                            <h4 class="text-warning">{{ user.chatmessage_set.count }}</h4>
+                            <small>Chat Messages</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

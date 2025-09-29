@@ -96,28 +96,63 @@
                             <i class="bi bi-collection"></i> Results
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'chatbot:home' %}">
+                            <i class="bi bi-chat-dots"></i> AI Assistant
+                        </a>
+                    </li>
                 </ul>
                 <ul class="navbar-nav">
                     {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'googledorks:my_bookmarks' %}">
-                            <i class="bi bi-bookmark"></i> My Bookmarks
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle"></i> {{ user.get_full_name|default:user.username }}
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'googledorks:create_session' %}">
-                            <i class="bi bi-plus-circle"></i> New Session
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/admin/">
-                            <i class="bi bi-gear"></i> Admin
-                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                    <i class="bi bi-person"></i> My Profile
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'chatbot:user_sessions' %}">
+                                    <i class="bi bi-clock-history"></i> Chat History
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'googledorks:my_bookmarks' %}">
+                                    <i class="bi bi-bookmark"></i> My Bookmarks
+                                </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:api_key_setup' %}">
+                                    <i class="bi bi-key"></i> API Key Setup
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'googledorks:create_session' %}">
+                                    <i class="bi bi-plus-circle"></i> New Session
+                                </a></li>
+                            {% if user.is_staff %}
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="/admin/">
+                                    <i class="bi bi-gear"></i> Admin Panel
+                                </a></li>
+                            {% endif %}
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                                    <i class="bi bi-box-arrow-right"></i> Logout
+                                </a></li>
+                        </ul>
                     </li>
                     {% else %}
                     <li class="nav-item">
-                        <a class="nav-link" href="/admin/">
+                        <a class="nav-link" href="{% url 'accounts:login' %}">
                             <i class="bi bi-box-arrow-in-right"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'accounts:register' %}">
+                            <i class="bi bi-person-plus"></i> Register
                         </a>
                     </li>
                     {% endif %}

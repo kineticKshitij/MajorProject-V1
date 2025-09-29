@@ -6,11 +6,13 @@ services:
     volumes:
       - .:/app
       - ./db.sqlite3:/app/db.sqlite3
+      - ./media:/app/media
     environment:
       - DEBUG=True
       - DJANGO_SECRET_KEY=your-secret-key-here
       - DB_ENGINE=django.db.backends.sqlite3
       - DB_NAME=/app/db.sqlite3
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
     command: >
       sh -c "python manage.py migrate &&
              python manage.py load_sample_dorks &&

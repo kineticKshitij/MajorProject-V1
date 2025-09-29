@@ -38,7 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'accounts',
     'googledorks',
+    'chatbot',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +135,35 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Custom User Model
+AUTH_USER_MODEL = 'accounts.User'
+
+# Authentication URLs
+LOGIN_URL = '/accounts/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'
+
+# Google Gemini API Configuration
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+GEMINI_MODEL = 'gemini-2.0-flash-exp'
+
+# Chatbot Settings
+CHATBOT_MAX_HISTORY = 10  # Maximum number of previous messages to include in context
+CHATBOT_SYSTEM_PROMPT = """You are an AI assistant for the Google Dorks Toolkit, a security research application. 
+You help users understand Google dorking techniques, security research methodologies, and provide guidance on ethical hacking practices.
+
+Key responsibilities:
+- Explain Google dork queries and their purposes
+- Suggest relevant dorks for specific security research goals
+- Provide ethical guidance and best practices
+- Help with the application's features and functionality
+- Warn about legal and ethical considerations
+
+Always emphasize:
+- Only test systems you own or have explicit permission to test
+- Follow responsible disclosure practices
+- Comply with local and international laws
+- Use findings constructively for security improvements
+
+Be helpful, educational, and promote ethical security research practices."""

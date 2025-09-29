@@ -1,0 +1,213 @@
+{% extends 'googledorks/base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - Google Dorks Toolkit{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4><i class="bi bi-pencil-square"></i> Edit Profile</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-light">
+                                <div class="card-header bg-light">
+                                    <h6><i class="bi bi-person"></i> Basic Information</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="{{ user_form.first_name.id_for_label }}" class="form-label">First
+                                            Name</label>
+                                        {{ user_form.first_name }}
+                                        {% if user_form.first_name.errors %}
+                                        {% for error in user_form.first_name.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="{{ user_form.last_name.id_for_label }}" class="form-label">Last
+                                            Name</label>
+                                        {{ user_form.last_name }}
+                                        {% if user_form.last_name.errors %}
+                                        {% for error in user_form.last_name.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="{{ user_form.email.id_for_label }}" class="form-label">Email
+                                            Address</label>
+                                        {{ user_form.email }}
+                                        {% if user_form.email.errors %}
+                                        {% for error in user_form.email.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="{{ user_form.gemini_api_key.id_for_label }}" class="form-label">
+                                            <i class="bi bi-robot"></i> Gemini API Key
+                                        </label>
+                                        {{ user_form.gemini_api_key }}
+                                        {% if user_form.gemini_api_key.errors %}
+                                        {% for error in user_form.gemini_api_key.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                        <div class="form-text">
+                                            <a href="{% url 'accounts:api_key_setup' %}" class="text-decoration-none">
+                                                Need help setting up your API key?
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card border-light">
+                                <div class="card-header bg-light">
+                                    <h6><i class="bi bi-gear"></i> Profile Settings</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="{{ profile_form.bio.id_for_label }}" class="form-label">Bio</label>
+                                        {{ profile_form.bio }}
+                                        {% if profile_form.bio.errors %}
+                                        {% for error in profile_form.bio.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label for="{{ profile_form.location.id_for_label }}"
+                                            class="form-label">Location</label>
+                                        {{ profile_form.location }}
+                                        {% if profile_form.location.errors %}
+                                        {% for error in profile_form.location.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                        {% endfor %}
+                                        {% endif %}
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ profile_form.preferred_language.id_for_label }}"
+                                                    class="form-label">Language</label>
+                                                {{ profile_form.preferred_language }}
+                                                {% if profile_form.preferred_language.errors %}
+                                                {% for error in profile_form.preferred_language.errors %}
+                                                <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label for="{{ profile_form.timezone.id_for_label }}"
+                                                    class="form-label">Timezone</label>
+                                                {{ profile_form.timezone }}
+                                                {% if profile_form.timezone.errors %}
+                                                {% for error in profile_form.timezone.errors %}
+                                                <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <div class="form-check">
+                                            {{ profile_form.receive_notifications }}
+                                            <label class="form-check-label"
+                                                for="{{ profile_form.receive_notifications.id_for_label }}">
+                                                Receive email notifications
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="card border-light">
+                                <div class="card-header bg-light">
+                                    <h6><i class="bi bi-link-45deg"></i> Social Links</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="{{ profile_form.website.id_for_label }}" class="form-label">
+                                                    <i class="bi bi-globe"></i> Website
+                                                </label>
+                                                {{ profile_form.website }}
+                                                {% if profile_form.website.errors %}
+                                                {% for error in profile_form.website.errors %}
+                                                <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="{{ profile_form.github_profile.id_for_label }}"
+                                                    class="form-label">
+                                                    <i class="bi bi-github"></i> GitHub
+                                                </label>
+                                                {{ profile_form.github_profile }}
+                                                {% if profile_form.github_profile.errors %}
+                                                {% for error in profile_form.github_profile.errors %}
+                                                <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="mb-3">
+                                                <label for="{{ profile_form.linkedin_profile.id_for_label }}"
+                                                    class="form-label">
+                                                    <i class="bi bi-linkedin"></i> LinkedIn
+                                                </label>
+                                                {{ profile_form.linkedin_profile }}
+                                                {% if profile_form.linkedin_profile.errors %}
+                                                {% for error in profile_form.linkedin_profile.errors %}
+                                                <div class="text-danger small">{{ error }}</div>
+                                                {% endfor %}
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

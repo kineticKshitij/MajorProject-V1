@@ -1,0 +1,205 @@
+{% extends 'googledorks/base.html' %}
+{% load static %}
+
+{% block title %}Register - Google Dorks Toolkit{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-7">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white text-center">
+                <h4><i class="bi bi-person-plus"></i> Create Account</h4>
+                <p class="mb-0">Join the Google Dorks Toolkit community</p>
+            </div>
+            <div class="card-body">
+                {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label">
+                                    <i class="bi bi-person"></i> First Name *
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                {% for error in form.first_name.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label">
+                                    <i class="bi bi-person"></i> Last Name *
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                {% for error in form.last_name.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="bi bi-at"></i> Username *
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                        {% endif %}
+                        <div class="form-text">Choose a unique username for your account.</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.email.id_for_label }}" class="form-label">
+                            <i class="bi bi-envelope"></i> Email Address *
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                        {% for error in form.email.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                        {% endif %}
+                        <div class="form-text">We'll never share your email with anyone else.</div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                    <i class="bi bi-lock"></i> Password *
+                                </label>
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                {% for error in form.password1.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                    <i class="bi bi-lock-fill"></i> Confirm Password *
+                                </label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                {% for error in form.password2.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                                {% endfor %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.gemini_api_key.id_for_label }}" class="form-label">
+                            <i class="bi bi-robot"></i> Google Gemini API Key
+                            <span class="badge bg-info">Optional</span>
+                        </label>
+                        {{ form.gemini_api_key }}
+                        {% if form.gemini_api_key.errors %}
+                        {% for error in form.gemini_api_key.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                        {% endif %}
+                        <div class="form-text">
+                            {{ form.gemini_api_key.help_text|safe }}
+                            <br><small class="text-muted">You can add this later in your profile settings.</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="terms" name="terms" required>
+                            <label class="form-check-label" for="terms">
+                                I agree to use this tool for <strong>educational and legitimate security research
+                                    purposes only</strong>
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="ethics" name="ethics" required>
+                            <label class="form-check-label" for="ethics">
+                                I will respect website terms of service and applicable laws
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="bi bi-person-plus"></i> Create Account
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0">
+                    Already have an account?
+                    <a href="{% url 'accounts:login' %}" class="text-decoration-none">
+                        <i class="bi bi-box-arrow-in-right"></i> Sign in here
+                    </a>
+                </p>
+                <small class="text-muted">
+                    <a href="{% url 'googledorks:home' %}" class="text-decoration-none">
+                        <i class="bi bi-arrow-left"></i> Back to Home
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="bi bi-shield-exclamation"></i> Ethical Usage Reminder</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <h6 class="text-success"><i class="bi bi-check-circle"></i> Allowed Uses</h6>
+                        <ul class="list-unstyled small">
+                            <li>✅ Educational purposes</li>
+                            <li>✅ Authorized penetration testing</li>
+                            <li>✅ Security research on your own systems</li>
+                            <li>✅ Bug bounty programs</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-danger"><i class="bi bi-x-circle"></i> Prohibited Uses</h6>
+                        <ul class="list-unstyled small">
+                            <li>❌ Unauthorized access</li>
+                            <li>❌ Data theft</li>
+                            <li>❌ Privacy violations</li>
+                            <li>❌ Malicious activities</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-info"><i class="bi bi-info-circle"></i> Best Practices</h6>
+                        <ul class="list-unstyled small">
+                            <li>📋 Get written permission</li>
+                            <li>🔒 Responsible disclosure</li>
+                            <li>⚖️ Follow local laws</li>
+                            <li>🛡️ Respect privacy</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

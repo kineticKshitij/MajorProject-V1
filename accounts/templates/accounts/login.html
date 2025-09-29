@@ -1,0 +1,108 @@
+{% extends 'googledorks/base.html' %}
+{% load static %}
+
+{% block title %}Login - Google Dorks Toolkit{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white text-center">
+                <h4><i class="bi bi-box-arrow-in-right"></i> Login</h4>
+            </div>
+            <div class="card-body">
+                {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label for="{{ form.username.id_for_label }}" class="form-label">
+                            <i class="bi bi-person"></i> Username or Email
+                        </label>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                        {% for error in form.username.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="{{ form.password.id_for_label }}" class="form-label">
+                            <i class="bi bi-lock"></i> Password
+                        </label>
+                        {{ form.password }}
+                        {% if form.password.errors %}
+                        {% for error in form.password.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                        {% endfor %}
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember_me" name="remember_me">
+                        <label class="form-check-label" for="remember_me">
+                            Remember me
+                        </label>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0">
+                    Don't have an account?
+                    <a href="{% url 'accounts:register' %}" class="text-decoration-none">
+                        <i class="bi bi-person-plus"></i> Sign up here
+                    </a>
+                </p>
+                <small class="text-muted">
+                    <a href="{% url 'googledorks:home' %}" class="text-decoration-none">
+                        <i class="bi bi-arrow-left"></i> Back to Home
+                    </a>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card border-info">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Why Create an Account?</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-bookmark"></i> Personalized Experience</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success"></i> Save and organize favorite dorks</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Track your search history</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Create custom search sessions</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-robot"></i> AI Assistant Access</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success"></i> Get personalized security research
+                                guidance</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Ask questions about Google dorking</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Receive dork recommendations</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

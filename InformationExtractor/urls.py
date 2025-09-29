@@ -24,5 +24,7 @@ def redirect_to_dorks(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', redirect_to_dorks),
+    path('accounts/', include('accounts.urls')),
     path('dorks/', include('googledorks.urls')),
+    path('chat/', include('chatbot.urls')),
 ]

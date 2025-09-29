@@ -11,6 +11,11 @@ RUN apt-get update \
     gcc \
     libc6-dev \
     libpq-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libfreetype6-dev \
+    liblcms2-dev \
+    libwebp-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -29,6 +34,9 @@ ENV DJANGO_SETTINGS_MODULE=InformationExtractor.production
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     libpq5 \
+    libjpeg62-turbo \
+    libfreetype6 \
+    libwebp7 \
     && rm -rf /var/lib/apt/lists/*
 
 # Create app user
@@ -45,7 +53,7 @@ COPY --from=builder /usr/local/bin/ /usr/local/bin/
 COPY . /app/
 
 # Create necessary directories
-RUN mkdir -p /app/staticfiles /app/logs
+RUN mkdir -p /app/staticfiles /app/media/avatars /app/logs
 
 # Collect static files
 RUN python manage.py collectstatic --noinput
@@ -61,7 +69,7 @@ EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8000/admin/login/')" || exit 1
+    CMD python -c "import requests; requests.get('http://localhost:8000/accounts/login/')" || exit 1
 
 # Run the application
 CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "InformationExtractor.wsgi:application"]

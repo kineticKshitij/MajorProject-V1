@@ -13,6 +13,11 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends \
     gcc \
     libc6-dev \
+    libjpeg-dev \
+    zlib1g-dev \
+    libfreetype6-dev \
+    liblcms2-dev \
+    libwebp-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Python dependencies
@@ -22,16 +27,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy project
 COPY . /app/
 
-# Create static files directory and set permissions
-RUN mkdir -p /app/staticfiles
+# Create necessary directories
+RUN mkdir -p /app/staticfiles /app/media/avatars
 
-# Create a non-root user early
-RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
+# Create a non-root user and set permissions
+RUN adduser --disabled-password --gecos '' appuser && \
+    chown -R appuser:appuser /app
 
 # Switch to non-root user
 USER appuser
 
-# Collect static files (now with proper permissions)
+# Collect static files
 RUN python manage.py collectstatic --noinput
 
 # Expose port

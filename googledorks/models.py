@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 
@@ -45,7 +45,7 @@ class GoogleDork(models.Model):
     risk_level = models.CharField(max_length=20, choices=RISK_LEVELS, default='low')
     tags = models.CharField(max_length=500, blank=True, help_text="Comma-separated tags")
     is_active = models.BooleanField(default=True)
-    created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     usage_count = models.PositiveIntegerField(default=0)
@@ -99,7 +99,7 @@ class SearchSession(models.Model):
     name = models.CharField(max_length=200)
     description = models.TextField(blank=True)
     dorks = models.ManyToManyField(GoogleDork, related_name='sessions')
-    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     total_results = models.PositiveIntegerField(default=0)
@@ -120,7 +120,7 @@ class SearchSession(models.Model):
 
 class DorkBookmark(models.Model):
     """User bookmarks for favorite dorks"""
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     dork = models.ForeignKey(GoogleDork, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     notes = models.TextField(blank=True)

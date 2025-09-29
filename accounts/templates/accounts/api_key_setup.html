@@ -1,0 +1,122 @@
+{% extends 'googledorks/base.html' %}
+{% load static %}
+
+{% block title %}Setup API Key - Google Dorks Toolkit{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h4><i class="bi bi-key"></i> Google Gemini API Key Setup</h4>
+                <p class="mb-0">Configure your personal API key to use the AI chatbot</p>
+            </div>
+            <div class="card-body">
+                {% if has_api_key %}
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i> <strong>API Key Configured!</strong>
+                    Your AI chatbot is ready to use.
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i> <strong>No API Key Found.</strong>
+                    Please configure your Gemini API key to enable the AI chatbot.
+                </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="gemini_api_key" class="form-label">
+                            <i class="bi bi-robot"></i> Google Gemini API Key
+                        </label>
+                        <input type="text" class="form-control" id="gemini_api_key" name="gemini_api_key"
+                            value="{{ api_key }}" placeholder="Enter your Google Gemini API key">
+                        <div class="form-text">
+                            Your API key is securely stored and only used for your personal AI chatbot interactions.
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Save API Key
+                        </button>
+                        {% if has_api_key %}
+                        <a href="{% url 'chatbot:home' %}" class="btn btn-success">
+                            <i class="bi bi-chat-dots"></i> Try Chatbot
+                        </a>
+                        {% endif %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-10">
+        <div class="card border-info">
+            <div class="card-header bg-light">
+                <h5><i class="bi bi-question-circle"></i> How to Get Your Google Gemini API Key</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-1-circle"></i> Visit Google AI Studio</h6>
+                        <p>Go to <a href="https://aistudio.google.com/app/apikey" target="_blank"
+                                class="text-decoration-none">
+                                Google AI Studio <i class="bi bi-box-arrow-up-right"></i>
+                            </a></p>
+
+                        <h6><i class="bi bi-2-circle"></i> Sign In</h6>
+                        <p>Use your Google account to sign in to AI Studio.</p>
+
+                        <h6><i class="bi bi-3-circle"></i> Create API Key</h6>
+                        <p>Click "Create API Key" and copy the generated key.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="bi bi-shield-check"></i> Security & Privacy</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="bi bi-check-circle text-success"></i> Your API key is encrypted and stored
+                                securely</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Only you can access your personal
+                                chatbot</li>
+                            <li><i class="bi bi-check-circle text-success"></i> Conversations are private to your
+                                account</li>
+                            <li><i class="bi bi-check-circle text-success"></i> API usage is monitored by Google's
+                                quotas</li>
+                        </ul>
+
+                        <h6><i class="bi bi-info-circle"></i> Usage Information</h6>
+                        <ul class="list-unstyled small text-muted">
+                            <li>• Free tier includes generous daily quotas</li>
+                            <li>• Check <a href="https://ai.google.dev/pricing" target="_blank">Google AI Pricing</a>
+                                for limits</li>
+                            <li>• Usage resets daily</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <div class="card border-warning">
+            <div class="card-header bg-warning text-dark">
+                <h6><i class="bi bi-exclamation-triangle"></i> Important Notes</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li><strong>Keep your API key private</strong> - Never share it with others</li>
+                    <li><strong>Monitor your usage</strong> - Check Google AI Studio for quota consumption</li>
+                    <li><strong>Rate limits apply</strong> - The free tier has daily usage limits</li>
+                    <li><strong>Security focused</strong> - The AI is trained to help with ethical security research
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

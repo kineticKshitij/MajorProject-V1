@@ -16,6 +16,14 @@ A comprehensive Django web application for managing and executing Google dorks (
 - **📊 Analytics Dashboard**: Statistics and usage tracking
 - **🔖 Bookmark System**: Save and organize favorite dorks
 - **📝 Session Management**: Track search sessions and history
+- **🤖 AI Assistant**: Google Gemini-powered chatbot for security research guidance
+
+### User Authentication & Profiles
+- **🔐 Custom User Registration**: Enhanced signup with ethical usage agreement
+- **👤 User Profiles**: Comprehensive profile management with social links
+- **🔑 Personal API Keys**: Individual Gemini API key management per user
+- **🛡️ Secure Sessions**: User-specific chat sessions and data isolation
+- **📈 Activity Tracking**: Personal usage statistics and analytics
 
 ### Security Categories
 - **Information Disclosure**: Exposed sensitive files and data
@@ -67,15 +75,29 @@ pip install -r requirements.txt
 python manage.py migrate
 python manage.py load_sample_dorks
 
+# Create superuser account
+python manage.py createsuperuser
+
 # Run development server
 python manage.py runserver
 ```
+
+### Getting Started Guide
+
+1. **Visit the Application**: Navigate to `http://localhost:8000`
+2. **Register Account**: Click "Register" to create your personal account
+3. **Setup API Key**: 
+   - Get your Gemini API key from [Google AI Studio](https://aistudio.google.com/app/apikey)
+   - Add it during registration or in Profile Settings
+4. **Explore Features**: Browse dorks, use AI assistant, bookmark favorites
+5. **Start Research**: Execute dorks responsibly and ethically
 
 ## 📋 Prerequisites
 
 - **Python 3.13+**
 - **Docker** (for containerized deployment)
 - **Git** (for version control)
+- **Google Gemini API Key** (for AI chatbot functionality)
 
 ## 🏗️ Project Architecture
 
@@ -85,6 +107,12 @@ MajorProject-V1/
 │   ├── settings.py          # Main configuration
 │   ├── urls.py              # URL routing
 │   └── wsgi.py              # WSGI configuration
+├── accounts/                # User authentication system
+│   ├── models.py            # Custom User and Profile models
+│   ├── views.py             # Authentication views
+│   ├── forms.py             # Registration and profile forms
+│   ├── templates/           # Auth templates
+│   └── admin.py             # User admin interface
 ├── googledorks/             # Main application
 │   ├── models.py            # Database models
 │   ├── views.py             # Business logic
@@ -92,6 +120,12 @@ MajorProject-V1/
 │   ├── templates/           # HTML templates
 │   ├── static/              # CSS, JS, images
 │   └── management/commands/ # Custom Django commands
+├── chatbot/                 # AI Assistant application
+│   ├── models.py            # Chat models
+│   ├── views.py             # Chat API endpoints
+│   ├── services.py          # Gemini AI integration
+│   ├── templates/           # Chat interface
+│   └── admin.py             # Chat admin interface
 ├── docker-compose*.yml      # Docker configurations
 ├── Dockerfile*              # Docker build files
 ├── requirements.txt         # Python dependencies
@@ -115,7 +149,20 @@ MajorProject-V1/
 - Create search sessions for organized research
 - Export results for documentation
 
-### 4. Admin Features
+### 4. User Account Management
+- Register for personalized experience
+- Set up personal Gemini API key for AI chatbot
+- Manage profile settings and preferences
+- Track personal usage statistics
+
+### 5. AI Assistant
+- Intelligent chatbot powered by Google Gemini
+- Security research guidance and explanations
+- Google dork suggestions and recommendations
+- Chat session management and history
+- Ethical hacking best practices advice
+
+### 6. Admin Features
 - Access admin panel at `/admin/`
 - Add custom dorks and categories
 - Monitor usage statistics
@@ -143,6 +190,10 @@ DB_NAME=/app/db.sqlite3
 # DB_PASSWORD=your-password
 # DB_HOST=db
 # DB_PORT=5432
+
+# Google Gemini AI Configuration
+GEMINI_API_KEY=your-gemini-api-key-here
+GEMINI_MODEL=gemini-2.0-flash-exp
 ```
 
 ### Deployment Options
@@ -192,6 +243,7 @@ This tool is designed for **legitimate security research and educational purpose
 - **Backend**: Django 5.2.6, Python 3.13+
 - **Database**: SQLite (dev), PostgreSQL (prod)
 - **Frontend**: HTML5, CSS3, JavaScript, Bootstrap
+- **AI Integration**: Google Gemini API (google-genai)
 - **Containerization**: Docker, Docker Compose
 - **Web Server**: Gunicorn, Nginx (production)
 
@@ -203,6 +255,12 @@ This tool is designed for **legitimate security research and educational purpose
 - **SearchResult**: Tracked search outcomes
 - **SearchSession**: Grouped research sessions
 - **DorkBookmark**: User-saved favorites
+- **User**: Custom user model with API key storage
+- **UserProfile**: Extended user information and preferences
+- **ChatSession**: AI conversation sessions
+- **ChatMessage**: Individual chat messages
+- **ChatFeedback**: User feedback on AI responses
+- **ChatMetrics**: Chat usage analytics
 
 ### Key Features
 - **Relationship mapping** between models
