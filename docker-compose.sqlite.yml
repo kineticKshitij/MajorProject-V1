@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+      - ./db.sqlite3:/app/db.sqlite3
+    environment:
+      - DEBUG=1
+      - DJANGO_SECRET_KEY=your-secret-key-here
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py load_sample_dorks &&
+             python manage.py runserver 0.0.0.0:8000"

@@ -1,0 +1,232 @@
+{% extends 'googledorks/base.html' %}
+
+{% block title %}{{ dork.title }} - Google Dorks Toolkit{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="category-color" style="background-color: {{ dork.category.color }};"></span>
+                        <span class="text-muted">{{ dork.category.name }}</span>
+                    </div>
+                    <div>
+                        <span class="badge difficulty-{{ dork.difficulty }}">
+                            {{ dork.get_difficulty_display }}
+                        </span>
+                        <span class="risk-{{ dork.risk_level }} ms-2">
+                            <i class="bi bi-exclamation-triangle"></i> {{ dork.get_risk_level_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <h1>{{ dork.title }}</h1>
+                <p class="text-muted">{{ dork.description }}</p>
+
+                <div class="mb-4">
+                    <h5>Google Dork Query:</h5>
+                    <div class="bg-light p-3 rounded">
+                        <code class="fs-6">{{ dork.query }}</code>
+                    </div>
+                    <small class="text-muted">
+                        Copy this query and paste it into Google search to find results.
+                    </small>
+                </div>
+
+                {% if dork.get_tags_list %}
+                <div class="mb-3">
+                    <h6>Tags:</h6>
+                    {% for tag in dork.get_tags_list %}
+                    <span class="badge bg-secondary me-1">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <div class="row text-center">
+                    <div class="col-md-4">
+                        <h6>Usage Count</h6>
+                        <h3 class="text-primary">{{ dork.usage_count }}</h3>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Created</h6>
+                        <p class="text-muted">{{ dork.created_at|date:"M j, Y" }}</p>
+                    </div>
+                    <div class="col-md-4">
+                        <h6>Results Found</h6>
+                        <h3 class="text-success">{{ result_count }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Results -->
+        {% if results %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="bi bi-collection"></i> Search Results ({{ result_count }})</h5>
+            </div>
+            <div class="card-body">
+                {% for result in results %}
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6>
+                                <a href="{{ result.url }}" target="_blank" class="text-decoration-none">
+                                    {{ result.title }}
+                                    <i class="bi bi-box-arrow-up-right small"></i>
+                                </a>
+                            </h6>
+                            <p class="text-success small mb-1">{{ result.url }}</p>
+                            {% if result.snippet %}
+                            <p class="text-muted small">{{ result.snippet|truncatechars:200 }}</p>
+                            {% endif %}
+                            <small class="text-muted">
+                                Found {{ result.search_date|timesince }} ago
+                                {% if result.domain %}
+                                • <span class="badge bg-light text-dark">{{ result.domain }}</span>
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="ms-3">
+                            {% if result.is_interesting %}
+                            <i class="bi bi-star-fill text-warning" title="Marked as interesting"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% if result.notes %}
+                    <div class="mt-2 p-2 bg-light rounded">
+                        <small><strong>Notes:</strong> {{ result.notes }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card mt-4">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-collection" style="font-size: 3rem; color: #ccc;"></i>
+                <h4 class="mt-3 text-muted">No results yet</h4>
+                <p class="text-muted">Execute this dork to find and save results.</p>
+                <button onclick="executeDork({{ dork.pk }})" class="btn btn-success">
+                    <i class="bi bi-play"></i> Execute Dork
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-md-4">
+        <!-- Actions -->
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="bi bi-gear"></i> Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button onclick="executeDork({{ dork.pk }})" class="btn btn-success">
+                        <i class="bi bi-play"></i> Execute Dork
+                    </button>
+
+                    <a href="https://www.google.com/search?q={{ dork.query|urlencode }}" target="_blank"
+                        class="btn btn-outline-primary">
+                        <i class="bi bi-google"></i> Search Google
+                    </a>
+
+                    {% if user.is_authenticated %}
+                    {% if is_bookmarked %}
+                    <button onclick="toggleBookmark({{ dork.pk }})" id="bookmark-btn-{{ dork.pk }}"
+                        class="btn btn-warning">
+                        <i class="bi bi-bookmark-fill"></i> Bookmarked
+                    </button>
+                    {% else %}
+                    <button onclick="toggleBookmark({{ dork.pk }})" id="bookmark-btn-{{ dork.pk }}"
+                        class="btn btn-outline-warning">
+                        <i class="bi bi-bookmark"></i> Bookmark
+                    </button>
+                    {% endif %}
+                    {% endif %}
+
+                    <button onclick="copyToClipboard('{{ dork.query }}')" class="btn btn-outline-secondary">
+                        <i class="bi bi-clipboard"></i> Copy Query
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="bi bi-info-circle"></i> Information</h6>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-5">Category:</dt>
+                    <dd class="col-sm-7">
+                        <a href="{% url 'googledorks:category_detail' dork.category.pk %}">
+                            {{ dork.category.name }}
+                        </a>
+                    </dd>
+
+                    <dt class="col-sm-5">Difficulty:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge difficulty-{{ dork.difficulty }}">
+                            {{ dork.get_difficulty_display }}
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-5">Risk Level:</dt>
+                    <dd class="col-sm-7">
+                        <span class="risk-{{ dork.risk_level }}">
+                            {{ dork.get_risk_level_display }}
+                        </span>
+                    </dd>
+
+                    <dt class="col-sm-5">Created:</dt>
+                    <dd class="col-sm-7">{{ dork.created_at|date:"M j, Y" }}</dd>
+
+                    <dt class="col-sm-5">Last Updated:</dt>
+                    <dd class="col-sm-7">{{ dork.updated_at|date:"M j, Y" }}</dd>
+
+                    {% if dork.created_by %}
+                    <dt class="col-sm-5">Created by:</dt>
+                    <dd class="col-sm-7">{{ dork.created_by.username }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        <!-- Safety Warning -->
+        {% if dork.risk_level == 'high' or dork.risk_level == 'critical' %}
+        <div class="card mt-3 border-danger">
+            <div class="card-header bg-danger text-white">
+                <h6><i class="bi bi-exclamation-triangle"></i> Safety Warning</h6>
+            </div>
+            <div class="card-body">
+                <p class="small mb-0">
+                    This dork has a {{ dork.get_risk_level_display|lower }} risk level.
+                    Use responsibly and ensure you have proper authorization before
+                    accessing any discovered resources.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% csrf_token %}
+
+<script>
+    function copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(function () {
+            alert('Dork query copied to clipboard!');
+        }, function (err) {
+            alert('Failed to copy to clipboard');
+        });
+    }
+</script>
+{% endblock %}

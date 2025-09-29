@@ -1,0 +1,140 @@
+{% extends 'googledorks/base.html' %}
+
+{% block title %}My Bookmarks - Google Dorks Toolkit{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-bookmark-fill"></i> My Bookmarks</h1>
+            <div>
+                <a href="{% url 'googledorks:dork_list' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-search"></i> Browse Dorks
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bookmarks -->
+<div class="row">
+    {% for bookmark in page_obj %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card dork-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <div>
+                    <span class="category-color" style="background-color: {{ bookmark.dork.category.color }};"></span>
+                    <small class="text-muted ms-1">{{ bookmark.dork.category.name }}</small>
+                </div>
+                <div>
+                    <span class="badge difficulty-{{ bookmark.dork.difficulty }}">
+                        {{ bookmark.dork.get_difficulty_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">
+                    <a href="{% url 'googledorks:dork_detail' bookmark.dork.pk %}" class="text-decoration-none">
+                        {{ bookmark.dork.title }}
+                    </a>
+                    <i class="bi bi-bookmark-fill text-warning ms-2"></i>
+                </h5>
+                <p class="card-text text-muted small">{{ bookmark.dork.description|truncatechars:100 }}</p>
+
+                <div class="mb-2">
+                    <code class="small">{{ bookmark.dork.query|truncatechars:50 }}</code>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <span class="risk-{{ bookmark.dork.risk_level }}">
+                            <i class="bi bi-exclamation-triangle"></i> {{ bookmark.dork.get_risk_level_display }}
+                        </span>
+                    </small>
+                    <small class="text-muted">
+                        Bookmarked {{ bookmark.created_at|timesince }} ago
+                    </small>
+                </div>
+
+                {% if bookmark.dork.get_tags_list %}
+                <div class="mt-2">
+                    {% for tag in bookmark.dork.get_tags_list %}
+                    <span class="badge bg-light text-dark small">{{ tag }}</span>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if bookmark.notes %}
+                <div class="mt-2 p-2 bg-light rounded">
+                    <small><strong>My Notes:</strong> {{ bookmark.notes }}</small>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent">
+                <div class="d-flex gap-2">
+                    <a href="{% url 'googledorks:dork_detail' bookmark.dork.pk %}"
+                        class="btn btn-outline-primary btn-sm">
+                        <i class="bi bi-eye"></i> View
+                    </a>
+                    <button onclick="executeDork({{ bookmark.dork.pk }})" class="btn btn-success btn-sm">
+                        <i class="bi bi-play"></i> Execute
+                    </button>
+                    <button onclick="toggleBookmark({{ bookmark.dork.pk }})" id="bookmark-btn-{{ bookmark.dork.pk }}"
+                        class="btn btn-warning btn-sm">
+                        <i class="bi bi-bookmark-fill"></i> Remove
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-md-12">
+        <div class="text-center py-5">
+            <i class="bi bi-bookmark" style="font-size: 3rem; color: #ccc;"></i>
+            <h3 class="mt-3 text-muted">No bookmarks yet</h3>
+            <p class="text-muted">Bookmark your favorite Google dorks for quick access.</p>
+            <a href="{% url 'googledorks:dork_list' %}" class="btn btn-primary">
+                <i class="bi bi-search"></i> Browse Dorks
+            </a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <nav aria-label="Bookmarks pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
+
+{% csrf_token %}
+{% endblock %}

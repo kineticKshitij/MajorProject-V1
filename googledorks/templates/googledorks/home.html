@@ -1,0 +1,238 @@
+{% extends 'googledorks/base.html' %}
+
+{% block title %}Dashboard - Google Dorks Toolkit{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">
+            <i class="bi bi-speedometer2"></i> Google Dorks Dashboard
+        </h1>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Total Dorks</h5>
+                        <h2>{{ total_dorks }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-search" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Categories</h5>
+                        <h2>{{ total_categories }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-tags" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Total Results</h5>
+                        <h2>{{ total_results }}</h2>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-collection" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h5 class="card-title">Quick Search</h5>
+                        <p class="mb-0">Start exploring</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="bi bi-lightning" style="font-size: 2rem;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Categories -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-tags"></i> Categories</h5>
+            </div>
+            <div class="card-body">
+                {% for category in categories %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div>
+                        <span class="category-color" style="background-color: {{ category.color }};"></span>
+                        <a href="{% url 'googledorks:category_detail' category.pk %}" class="ms-2">
+                            {{ category.name }}
+                        </a>
+                    </div>
+                    <span class="badge bg-secondary">{{ category.dork_count }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted">No categories available.</p>
+                {% endfor %}
+                <div class="mt-3">
+                    <a href="{% url 'googledorks:category_list' %}" class="btn btn-outline-primary btn-sm">
+                        View All Categories
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Dorks -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-clock"></i> Recent Dorks</h5>
+            </div>
+            <div class="card-body">
+                {% for dork in recent_dorks %}
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <div>
+                            <a href="{% url 'googledorks:dork_detail' dork.pk %}">
+                                {{ dork.title }}
+                            </a>
+                        </div>
+                        <small class="text-muted">
+                            <span class="category-color" style="background-color: {{ dork.category.color }};"></span>
+                            {{ dork.category.name }} •
+                            <span class="difficulty-{{ dork.difficulty }} px-2 rounded">{{ dork.get_difficulty_display
+                                }}</span>
+                        </small>
+                    </div>
+                    <div>
+                        <span class="risk-{{ dork.risk_level }}">
+                            <i class="bi bi-exclamation-triangle"></i> {{ dork.get_risk_level_display }}
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-muted">No dorks available.</p>
+                {% endfor %}
+                <div class="mt-3">
+                    <a href="{% url 'googledorks:dork_list' %}" class="btn btn-outline-primary btn-sm">
+                        View All Dorks
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Results -->
+{% if recent_results %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-collection"></i> Recent Search Results</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>Domain</th>
+                                <th>Dork</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for result in recent_results %}
+                            <tr>
+                                <td>
+                                    <a href="{{ result.url }}" target="_blank" class="text-decoration-none">
+                                        {{ result.title|truncatechars:50 }}
+                                        <i class="bi bi-box-arrow-up-right small"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">{{ result.domain }}</span>
+                                </td>
+                                <td>
+                                    <a href="{% url 'googledorks:dork_detail' result.dork.pk %}">
+                                        {{ result.dork.title|truncatechars:30 }}
+                                    </a>
+                                </td>
+                                <td>
+                                    <small class="text-muted">
+                                        {{ result.search_date|timesince }} ago
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if result.is_interesting %}
+                                    <i class="bi bi-star-fill text-warning" title="Marked as interesting"></i>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'googledorks:search_results' %}" class="btn btn-outline-primary btn-sm">
+                        View All Results
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card bg-light">
+            <div class="card-body text-center">
+                <h5>Quick Actions</h5>
+                <div class="mt-3">
+                    <a href="{% url 'googledorks:dork_list' %}" class="btn btn-primary me-2">
+                        <i class="bi bi-search"></i> Browse Dorks
+                    </a>
+                    <a href="{% url 'googledorks:category_list' %}" class="btn btn-success me-2">
+                        <i class="bi bi-tags"></i> Explore Categories
+                    </a>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'googledorks:create_session' %}" class="btn btn-warning me-2">
+                        <i class="bi bi-plus-circle"></i> New Session
+                    </a>
+                    {% endif %}
+                    <a href="/admin/" class="btn btn-info">
+                        <i class="bi bi-gear"></i> Manage Data
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

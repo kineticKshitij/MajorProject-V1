@@ -1,0 +1,155 @@
+{% extends 'googledorks/base.html' %}
+
+{% block title %}Search Results - Google Dorks Toolkit{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="bi bi-collection"></i> Search Results</h1>
+            <div>
+                <a href="{% url 'googledorks:dork_list' %}" class="btn btn-outline-primary">
+                    <i class="bi bi-search"></i> Browse Dorks
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="search" class="form-label">Search</label>
+                        <input type="text" class="form-control" id="search" name="search"
+                            value="{{ current_filters.search }}" placeholder="Search results...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="domain" class="form-label">Domain</label>
+                        <input type="text" class="form-control" id="domain" name="domain"
+                            value="{{ current_filters.domain }}" placeholder="e.g., example.com">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="interesting" class="form-label">Filter</label>
+                        <select class="form-select" id="interesting" name="interesting">
+                            <option value="">All Results</option>
+                            <option value="true" {% if current_filters.interesting=="true" %}selected{% endif %}>
+                                Interesting Only
+                            </option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <button type="submit" class="btn btn-primary d-block">
+                            <i class="bi bi-funnel"></i> Filter
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results -->
+<div class="row">
+    <div class="col-md-12">
+        {% if page_obj %}
+        <div class="card">
+            <div class="card-header">
+                <h5>Found {{ page_obj.paginator.count }} results</h5>
+            </div>
+            <div class="card-body">
+                {% for result in page_obj %}
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6>
+                                <a href="{{ result.url }}" target="_blank" class="text-decoration-none">
+                                    {{ result.title }}
+                                    <i class="bi bi-box-arrow-up-right small"></i>
+                                </a>
+                                {% if result.is_interesting %}
+                                <i class="bi bi-star-fill text-warning ms-2" title="Marked as interesting"></i>
+                                {% endif %}
+                            </h6>
+                            <p class="text-success small mb-1">{{ result.url }}</p>
+                            {% if result.snippet %}
+                            <p class="text-muted small">{{ result.snippet|truncatechars:300 }}</p>
+                            {% endif %}
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">
+                                    Found {{ result.search_date|timesince }} ago via
+                                    <a href="{% url 'googledorks:dork_detail' result.dork.pk %}">
+                                        {{ result.dork.title|truncatechars:30 }}
+                                    </a>
+                                    {% if result.domain %}
+                                    • <span class="badge bg-light text-dark">{{ result.domain }}</span>
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    {% if result.notes %}
+                    <div class="mt-2 p-2 bg-light rounded">
+                        <small><strong>Notes:</strong> {{ result.notes }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-collection" style="font-size: 3rem; color: #ccc;"></i>
+            <h3 class="mt-3 text-muted">No search results found</h3>
+            <p class="text-muted">Execute some Google dorks to see results here.</p>
+            <a href="{% url 'googledorks:dork_list' %}" class="btn btn-primary">
+                <i class="bi bi-search"></i> Browse Dorks
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <nav aria-label="Results pagination">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1">First</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+                {% endif %}
+
+                <li class="page-item active">
+                    <span class="page-link">
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link"
+                        href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}">Last</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'googledorks/base.html' %}
+
+{% block title %}Create Search Session - Google Dorks Toolkit{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-plus-circle"></i> Create New Search Session</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Session Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" required
+                            placeholder="e.g., WordPress Security Audit">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                            placeholder="Optional description of what this session is for..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Select Dorks *</label>
+                        <p class="text-muted small">Choose the Google dorks you want to include in this session.</p>
+
+                        <!-- Category Filter -->
+                        <div class="mb-3">
+                            <select id="categoryFilter" class="form-select" onchange="filterDorks()">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                <option value="{{ category.pk }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Dorks List -->
+                        <div
+                            style="max-height: 400px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; padding: 0.5rem;">
+                            {% for dork in dorks %}
+                            <div class="form-check mb-2 dork-item" data-category="{{ dork.category.pk }}">
+                                <input class="form-check-input" type="checkbox" name="dorks" value="{{ dork.pk }}"
+                                    id="dork{{ dork.pk }}">
+                                <label class="form-check-label w-100" for="dork{{ dork.pk }}">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <strong>{{ dork.title }}</strong>
+                                            <br>
+                                            <small class="text-muted">{{ dork.description|truncatechars:100 }}</small>
+                                            <br>
+                                            <small>
+                                                <span class="category-color"
+                                                    style="background-color: {{ dork.category.color }}; width: 12px; height: 12px; display: inline-block; border-radius: 50%;"></span>
+                                                {{ dork.category.name }} •
+                                                <span class="badge difficulty-{{ dork.difficulty }} small">{{
+                                                    dork.get_difficulty_display }}</span> •
+                                                <span class="risk-{{ dork.risk_level }} small">{{
+                                                    dork.get_risk_level_display }}</span>
+                                            </small>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            {% empty %}
+                            <p class="text-muted">No dorks available.</p>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectAll()">
+                                Select All
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="selectNone()">
+                                Select None
+                            </button>
+                            <span id="selectedCount" class="ms-3 text-muted">0 dorks selected</span>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'googledorks:home' %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Create Session
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterDorks() {
+        const categoryFilter = document.getElementById('categoryFilter').value;
+        const dorkItems = document.querySelectorAll('.dork-item');
+
+        dorkItems.forEach(item => {
+            if (!categoryFilter || item.dataset.category === categoryFilter) {
+                item.style.display = 'block';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+
+        updateSelectedCount();
+    }
+
+    function selectAll() {
+        const visibleCheckboxes = document.querySelectorAll('.dork-item:not([style*="display: none"]) input[type="checkbox"]');
+        visibleCheckboxes.forEach(checkbox => {
+            checkbox.checked = true;
+        });
+        updateSelectedCount();
+    }
+
+    function selectNone() {
+        const checkboxes = document.querySelectorAll('input[name="dorks"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        updateSelectedCount();
+    }
+
+    function updateSelectedCount() {
+        const checkedBoxes = document.querySelectorAll('input[name="dorks"]:checked');
+        const count = checkedBoxes.length;
+        document.getElementById('selectedCount').textContent = `${count} dorks selected`;
+    }
+
+    // Add event listeners to checkboxes
+    document.addEventListener('DOMContentLoaded', function () {
+        const checkboxes = document.querySelectorAll('input[name="dorks"]');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelectedCount);
+        });
+        updateSelectedCount();
+    });
+</script>
+{% endblock %}
