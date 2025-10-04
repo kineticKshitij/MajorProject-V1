@@ -1,0 +1,388 @@
+{% extends 'googledorks/base.html' %}
+
+{% block title %}Entity Research Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">🎯 Entity Research Dashboard</h1>
+                    <p class="text-muted">Targeted information gathering for specific entities</p>
+                </div>
+                <div>
+                    <a href="{% url 'googledorks:entity_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg"></i> Add Entity
+                    </a>
+                    <div class="btn-group ms-2" role="group">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-gear"></i> Tools
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'googledorks:entity_bulk_import' %}">
+                                    <i class="bi bi-upload"></i> Bulk Import
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'googledorks:entity_export_csv' %}">
+                                    <i class="bi bi-download"></i> Export CSV
+                                </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'googledorks:entity_templates' %}">
+                                    <i class="bi bi-collection"></i> Search Templates
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'googledorks:entity_analytics' %}">
+                                    <i class="bi bi-graph-up"></i> Analytics
+                                </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body text-center">
+                    <div class="h2 text-primary">{{ stats.total_entities }}</div>
+                    <div class="text-muted">Total Entities</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body text-center">
+                    <div class="h2 text-success">{{ stats.active_entities }}</div>
+                    <div class="text-muted">Active Research</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-warning">
+                <div class="card-body text-center">
+                    <div class="h2 text-warning">{{ stats.high_priority }}</div>
+                    <div class="text-muted">High Priority</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-info">
+                <div class="card-body text-center">
+                    <div class="h2 text-info">{{ stats.recent_searches }}</div>
+                    <div class="text-muted">Searched This Week</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Entities -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-clock-history"></i> Recent Entities
+                    </h5>
+                    <a href="{% url 'googledorks:entity_list' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_entities %}
+                    <div class="list-group list-group-flush">
+                        {% for entity in recent_entities %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge"
+                                        style="background-color: {{ entity.entity_type.color }}; margin-right: 10px;">
+                                        <i class="{{ entity.entity_type.icon }}"></i>
+                                    </span>
+                                    <div>
+                                        <a href="{% url 'googledorks:entity_detail' entity.pk %}"
+                                            class="text-decoration-none">
+                                            <strong>{{ entity.name }}</strong>
+                                        </a>
+                                        <div class="small text-muted">{{ entity.entity_type.display_name }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="small">
+                                    <span class="badge bg-{{ entity.priority|default:'secondary' }}">
+                                        {{ entity.get_priority_display }}
+                                    </span>
+                                </div>
+                                <div class="small text-muted">{{ entity.created_at|timesince }} ago</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-inbox display-4 text-muted"></i>
+                        <p class="text-muted mt-2">No entities yet</p>
+                        <a href="{% url 'googledorks:entity_create' %}" class="btn btn-primary">Create Your First
+                            Entity</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Most Searched Entities -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-trophy"></i> Most Searched Entities
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if top_entities %}
+                    <div class="list-group list-group-flush">
+                        {% for entity in top_entities %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge"
+                                        style="background-color: {{ entity.entity_type.color }}; margin-right: 10px;">
+                                        <i class="{{ entity.entity_type.icon }}"></i>
+                                    </span>
+                                    <div>
+                                        <a href="{% url 'googledorks:entity_detail' entity.pk %}"
+                                            class="text-decoration-none">
+                                            <strong>{{ entity.name }}</strong>
+                                        </a>
+                                        <div class="small text-muted">{{ entity.entity_type.display_name }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="badge bg-primary">{{ entity.search_count }} searches</div>
+                                {% if entity.last_researched %}
+                                <div class="small text-muted">Last: {{ entity.last_researched|timesince }} ago</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="bi bi-search display-4 text-muted"></i>
+                        <p class="text-muted mt-2">No search activity yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entity Types and Recent Sessions -->
+    <div class="row mt-4">
+        <!-- Entity Type Distribution -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-pie-chart"></i> Entity Types
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if entity_types %}
+                    {% for entity_type in entity_types %}
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <span class="badge me-2" style="background-color: {{ entity_type.color }};">
+                                <i class="{{ entity_type.icon }}"></i>
+                            </span>
+                            <span>{{ entity_type.display_name }}</span>
+                        </div>
+                        <span class="badge bg-secondary">{{ entity_type.count }}</span>
+                    </div>
+                    {% endfor %}
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-diagram-3 display-4 text-muted"></i>
+                        <p class="text-muted mt-2">No entity types in use</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Search Sessions -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-activity"></i> Recent Search Sessions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if recent_sessions %}
+                    <div class="list-group list-group-flush">
+                        {% for session in recent_sessions %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <a href="{% url 'googledorks:entity_session_detail' session.pk %}"
+                                        class="text-decoration-none">
+                                        <strong>{{ session.name }}</strong>
+                                    </a>
+                                    <div class="small text-muted">
+                                        Entity: <a href="{% url 'googledorks:entity_detail' session.entity.pk %}">{{
+                                            session.entity.name }}</a>
+                                    </div>
+                                </div>
+                                <div class="text-end">
+                                    {% if session.is_completed %}
+                                    <span class="badge bg-success">Completed</span>
+                                    {% elif session.is_active %}
+                                    <span class="badge bg-warning">In Progress</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">Pending</span>
+                                    {% endif %}
+                                    <div class="small text-muted">{{ session.created_at|timesince }} ago</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-3">
+                        <i class="bi bi-list-check display-4 text-muted"></i>
+                        <p class="text-muted mt-2">No search sessions yet</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-lightning"></i> Quick Actions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <button type="button" class="btn btn-outline-primary" onclick="showQuickCreateModal()">
+                                    <i class="bi bi-plus-circle"></i><br>
+                                    Quick Add Entity
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <a href="{% url 'googledorks:entity_templates' %}" class="btn btn-outline-info">
+                                    <i class="bi bi-collection"></i><br>
+                                    Browse Templates
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <a href="{% url 'googledorks:entity_bulk_import' %}" class="btn btn-outline-success">
+                                    <i class="bi bi-upload"></i><br>
+                                    Bulk Import
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="d-grid">
+                                <a href="{% url 'googledorks:entity_analytics' %}" class="btn btn-outline-warning">
+                                    <i class="bi bi-graph-up"></i><br>
+                                    View Analytics
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Create Modal -->
+<div class="modal fade" id="quickCreateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quick Create Entity</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickCreateForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Entity Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="entity_type" class="form-label">Type</label>
+                        <select class="form-select" id="entity_type" name="entity_type" required>
+                            <option value="">Select type...</option>
+                            {% for entity_type in entity_types %}
+                            <option value="{{ entity_type.pk }}">{{ entity_type.display_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="website" class="form-label">Website (optional)</label>
+                        <input type="url" class="form-control" id="website" name="website">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description (optional)</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitQuickCreate()">Create Entity</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showQuickCreateModal() {
+        new bootstrap.Modal(document.getElementById('quickCreateModal')).show();
+    }
+
+    function submitQuickCreate() {
+        const form = document.getElementById('quickCreateForm');
+        const formData = new FormData(form);
+
+        fetch('{% url "googledorks:entity_quick_create" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.entity.url;
+                } else {
+                    alert('Error creating entity: ' + JSON.stringify(data.errors));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while creating the entity.');
+            });
+    }
+</script>
+{% endblock %}

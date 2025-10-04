@@ -131,7 +131,8 @@ def send_message(request):
                     gemini_service.generate_response(
                         message_content,
                         message_history,
-                        str(session.id)
+                        str(session.id),
+                        request.user if request.user.is_authenticated else None
                     )
                 )
             finally:

@@ -126,6 +126,25 @@ MajorProject-V1/
 │   ├── services.py          # Gemini AI integration
 │   ├── templates/           # Chat interface
 │   └── admin.py             # Chat admin interface
+├── frontend/                # React frontend (NEW)
+│   ├── src/                 # React source code
+│   ├── public/              # Static assets
+│   └── package.json         # Frontend dependencies
+├── docs/                    # 📚 Documentation (66+ guides)
+│   ├── INDEX.md             # Documentation index
+│   ├── QUICK_START*.md      # Quick start guides
+│   ├── CHATBOT_*.md         # Chatbot documentation
+│   ├── FEATURES_*.md        # Feature documentation
+│   └── *_FIX.md             # Bug fix documentation
+├── scripts/                 # 🔧 Utility scripts
+│   ├── setup_chatbot.py     # Chatbot setup
+│   ├── validate-docker.py   # Docker validation
+│   └── check_*.py           # Various check scripts
+├── tests/                   # 🧪 Test files
+│   ├── test_api.html        # API testing
+│   └── test_registration*.py # Registration tests
+├── presentations/           # 📊 Project presentations
+│   └── *.pptx              # PowerPoint presentations
 ├── docker-compose*.yml      # Docker configurations
 ├── Dockerfile*              # Docker build files
 ├── requirements.txt         # Python dependencies
@@ -241,11 +260,34 @@ This tool is designed for **legitimate security research and educational purpose
 ## 📊 Technology Stack
 
 - **Backend**: Django 5.2.6, Python 3.13+
+- **Frontend**: React 18+ with TypeScript, Tailwind CSS
 - **Database**: SQLite (dev), PostgreSQL (prod)
-- **Frontend**: HTML5, CSS3, JavaScript, Bootstrap
 - **AI Integration**: Google Gemini API (google-genai)
+- **Graph Visualization**: ReactFlow
 - **Containerization**: Docker, Docker Compose
 - **Web Server**: Gunicorn, Nginx (production)
+
+## 📚 Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) folder:
+
+### 📖 Essential Guides
+- **[Quick Start Guide](docs/QUICK_START.md)** - Get started in 5 minutes
+- **[Features Overview](docs/FEATURES_IMPLEMENTED.md)** - Complete feature list
+- **[Chatbot Setup](docs/CHATBOT_SETUP.md)** - AI assistant configuration
+- **[Testing Guide](docs/FULL_FEATURE_TESTING_GUIDE.md)** - Comprehensive testing
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Production deployment
+
+### 📂 Documentation Categories
+- **Quick Starts** (4 guides) - Fast onboarding
+- **Features** (4 guides) - Feature documentation
+- **Chatbot** (7 guides) - AI assistant setup
+- **Frontend** (4 guides) - React development
+- **Backend** (2 guides) - API documentation
+- **Testing** (7 guides) - Testing procedures
+- **Bug Fixes** (10 guides) - Troubleshooting
+
+**👉 See [docs/INDEX.md](docs/INDEX.md) for complete documentation index**
 
 ## � Database Models
 

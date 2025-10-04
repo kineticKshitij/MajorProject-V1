@@ -1,0 +1,270 @@
+{% extends 'googledorks/base.html' %}
+
+{% block title %}Entity List{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">📋 Entity Management</h1>
+                    <p class="text-muted">Manage your research targets</p>
+                </div>
+                <div>
+                    <a href="{% url 'googledorks:entity_create' %}" class="btn btn-primary">
+                        <i class="bi bi-plus-lg"></i> Add Entity
+                    </a>
+                    <a href="{% url 'googledorks:entity_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-speedometer2"></i> Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-4">
+                            {{ form.search_query }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ form.entity_type }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ form.status }}
+                        </div>
+                        <div class="col-md-2">
+                            {{ form.priority }}
+                        </div>
+                        <div class="col-md-2">
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-outline-primary">
+                                    <i class="bi bi-search"></i> Search
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entity List -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-list"></i> Entities
+                        <span class="badge bg-secondary">{{ page_obj.paginator.count }}</span>
+                    </h5>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" type="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-three-dots"></i> Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'googledorks:entity_bulk_import' %}">
+                                    <i class="bi bi-upload"></i> Bulk Import
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'googledorks:entity_export_csv' %}">
+                                    <i class="bi bi-download"></i> Export CSV
+                                </a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if page_obj %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Entity</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Priority</th>
+                                    <th>Last Researched</th>
+                                    <th>Searches</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for entity in page_obj %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge me-2"
+                                                style="background-color: {{ entity.entity_type.color }};">
+                                                <i class="{{ entity.entity_type.icon }}"></i>
+                                            </span>
+                                            <div>
+                                                <a href="{% url 'googledorks:entity_detail' entity.pk %}"
+                                                    class="text-decoration-none">
+                                                    <strong>{{ entity.name }}</strong>
+                                                </a>
+                                                {% if entity.description %}
+                                                <div class="small text-muted">{{ entity.description|truncatechars:50 }}
+                                                </div>
+                                                {% endif %}
+                                                {% if entity.website %}
+                                                <div class="small">
+                                                    <a href="{{ entity.website }}" target="_blank"
+                                                        class="text-info text-decoration-none">
+                                                        <i class="bi bi-link-45deg"></i> {{
+                                                        entity.website|truncatechars:30 }}
+                                                    </a>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge" style="background-color: {{ entity.entity_type.color }};">
+                                            {{ entity.entity_type.display_name }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if entity.status == 'active' %}
+                                        <span class="badge bg-success">Active</span>
+                                        {% elif entity.status == 'completed' %}
+                                        <span class="badge bg-primary">Completed</span>
+                                        {% elif entity.status == 'on_hold' %}
+                                        <span class="badge bg-warning">On Hold</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ entity.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if entity.priority == 'critical' %}
+                                        <span class="badge bg-danger">Critical</span>
+                                        {% elif entity.priority == 'high' %}
+                                        <span class="badge bg-warning">High</span>
+                                        {% elif entity.priority == 'medium' %}
+                                        <span class="badge bg-info">Medium</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">Low</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if entity.last_researched %}
+                                        <small class="text-muted">{{ entity.last_researched|timesince }} ago</small>
+                                        {% else %}
+                                        <small class="text-muted">Never</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ entity.search_count }}</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'googledorks:entity_detail' entity.pk %}"
+                                                class="btn btn-outline-primary" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="{% url 'googledorks:entity_edit' entity.pk %}"
+                                                class="btn btn-outline-secondary" title="Edit">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                            <a href="{% url 'googledorks:entity_session_create' entity.pk %}"
+                                                class="btn btn-outline-success" title="Create Search Session">
+                                                <i class="bi bi-search"></i>
+                                            </a>
+                                            <button type="button" class="btn btn-outline-danger" title="Delete"
+                                                onclick="confirmDelete('{{ entity.pk }}', '{{ entity.name }}')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                    <div class="card-footer">
+                        <nav aria-label="Entity pagination">
+                            <ul class="pagination pagination-sm justify-content-center mb-0">
+                                {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page=1">First</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">Previous</a>
+                                </li>
+                                {% endif %}
+
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+
+                                {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">Next</a>
+                                </li>
+                                <li class="page-item">
+                                    <a class="page-link"
+                                        href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.paginator.num_pages }}">Last</a>
+                                </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                    {% endif %}
+
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="bi bi-inbox display-1 text-muted"></i>
+                        <h4 class="text-muted mt-3">No entities found</h4>
+                        <p class="text-muted">Try adjusting your search criteria or create a new entity.</p>
+                        <a href="{% url 'googledorks:entity_create' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-lg"></i> Create First Entity
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Deletion</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete the entity "<span id="entityName"></span>"?</p>
+                <p class="text-danger"><strong>This action cannot be undone.</strong></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="#" id="deleteConfirmBtn" class="btn btn-danger">Delete Entity</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmDelete(entityId, entityName) {
+        document.getElementById('entityName').textContent = entityName;
+        document.getElementById('deleteConfirmBtn').href = `/entities/${entityId}/delete/`;
+        new bootstrap.Modal(document.getElementById('deleteModal')).show();
+    }
+</script>
+{% endblock %}

@@ -3,6 +3,12 @@ from django.conf import settings
 from django.urls import reverse
 from django.utils import timezone
 
+# Import entity models
+from .models_entity import (
+    EntityType, Entity, EntityAttribute, EntitySearchTemplate,
+    EntitySearchSession, EntitySearchResult, EntityRelationship, EntityNote
+)
+
 
 class DorkCategory(models.Model):
     """Categories for organizing Google dorks"""
@@ -45,10 +51,16 @@ class GoogleDork(models.Model):
     risk_level = models.CharField(max_length=20, choices=RISK_LEVELS, default='low')
     tags = models.CharField(max_length=500, blank=True, help_text="Comma-separated tags")
     is_active = models.BooleanField(default=True)
+    
+    # Entity support
+    supports_entities = models.BooleanField(default=False, help_text="Whether this dork can be used with entity placeholders")
+    entity_placeholders = models.JSONField(default=list, blank=True, help_text="Available placeholders like {entity_name}, {domain}")
+    
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     usage_count = models.PositiveIntegerField(default=0)
+    execution_count = models.PositiveIntegerField(default=0, help_text="Number of times this dork has been executed")
 
     class Meta:
         ordering = ['-created_at']
@@ -65,11 +77,38 @@ class GoogleDork(models.Model):
 
     def get_tags_list(self):
         return [tag.strip() for tag in self.tags.split(',') if tag.strip()]
+    
+    def generate_entity_query(self, entity, **kwargs):
+        """Generate entity-specific query if this dork supports entities"""
+        if not self.supports_entities:
+            return self.query
+            
+        context = {
+            'entity_name': entity.name,
+            'domain': entity.website.replace('https://', '').replace('http://', '').replace('www.', '') if entity.website else '',
+            'location': entity.location,
+            'industry': entity.industry,
+            **kwargs
+        }
+        
+        # Add all aliases as potential substitutions
+        for i, alias in enumerate(entity.get_all_names()):
+            context[f'alias_{i}'] = alias
+        
+        # Add domains
+        for i, domain in enumerate(entity.get_domain_list()):
+            context[f'domain_{i}'] = domain
+            
+        try:
+            return self.query.format(**context)
+        except KeyError as e:
+            return self.query  # Return original if template error
 
 
 class SearchResult(models.Model):
     """Results from executing Google dorks"""
     dork = models.ForeignKey(GoogleDork, on_delete=models.CASCADE, related_name='results')
+    entity = models.ForeignKey('Entity', on_delete=models.CASCADE, null=True, blank=True, related_name='dork_results', help_text="Associated entity if this is entity-specific search")
     title = models.CharField(max_length=500)
     url = models.URLField(max_length=2000)
     snippet = models.TextField(blank=True)

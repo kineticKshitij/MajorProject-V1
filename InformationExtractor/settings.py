@@ -38,12 +38,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    
+    # Third-party apps
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'corsheaders',
+    'drf_spectacular',
+    
+    # Local apps
     'accounts',
     'googledorks',
     'chatbot',
+    'socialcrawler',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',  # Must be at the top
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -145,25 +156,166 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Google Gemini API Configuration
-GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+GEMINI_API_KEY = 'AIzaSyA_pM8kSybEKlLn2EWdHrhydUf1bx2nFHc'
 GEMINI_MODEL = 'gemini-2.0-flash-exp'
 
 # Chatbot Settings
 CHATBOT_MAX_HISTORY = 10  # Maximum number of previous messages to include in context
-CHATBOT_SYSTEM_PROMPT = """You are an AI assistant for the Google Dorks Toolkit, a security research application. 
-You help users understand Google dorking techniques, security research methodologies, and provide guidance on ethical hacking practices.
+CHATBOT_SYSTEM_PROMPT = """You are an AI assistant for the Google Dorks Toolkit, a comprehensive security research and entity investigation platform. 
+You help users understand Google dorking techniques, entity research methodologies, and provide guidance on ethical research practices.
 
 Key responsibilities:
-- Explain Google dork queries and their purposes
-- Suggest relevant dorks for specific security research goals
-- Provide ethical guidance and best practices
-- Help with the application's features and functionality
-- Warn about legal and ethical considerations
+- Explain Google dork queries and their purposes for entity research
+- Suggest relevant dorks for investigating specific entities (companies, people, organizations, etc.)
+- Guide users in entity-focused research workflows
+- Help organize research using our Entity Management system
+- Provide entity search templates and recommendations
+- Assist with relationship mapping between entities
+- Explain application features including entity tracking, search sessions, and results analysis
+- Warn about legal and ethical considerations in entity research
+
+Entity Research Focus:
+- Help users create and manage entity profiles (companies, people, organizations, government agencies, educational institutions, domains)
+- Suggest search strategies for different entity types
+- Recommend relevant search templates based on research goals
+- Guide users in organizing findings with entity attributes and relationships
+- Assist with bulk research operations and data analysis
 
 Always emphasize:
-- Only test systems you own or have explicit permission to test
-- Follow responsible disclosure practices
-- Comply with local and international laws
-- Use findings constructively for security improvements
+- Only research entities you have legitimate interest in or permission to investigate
+- Follow responsible disclosure practices for any security findings
+- Comply with local and international laws and privacy regulations
+- Respect individuals' privacy and data protection rights
+- Use findings constructively for security improvements and legitimate research
 
-Be helpful, educational, and promote ethical security research practices."""
+Be helpful, educational, and promote ethical entity research and security investigation practices."""
+
+
+# ==============================================================================
+# REST FRAMEWORK CONFIGURATION
+# ==============================================================================
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',  # Keep for admin
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+    ],
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    ],
+    'DEFAULT_FILTER_BACKENDS': [
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
+    ],
+}
+
+# ==============================================================================
+# JWT CONFIGURATION
+# ==============================================================================
+
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': True,
+    
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+    'VERIFYING_KEY': None,
+    'AUDIENCE': None,
+    'ISSUER': None,
+    
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+    'USER_ID_FIELD': 'id',
+    'USER_ID_CLAIM': 'user_id',
+    
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+    'TOKEN_TYPE_CLAIM': 'token_type',
+    
+    'JTI_CLAIM': 'jti',
+}
+
+# ==============================================================================
+# CORS CONFIGURATION
+# ==============================================================================
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://localhost:5173",  # Vite default
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+# ==============================================================================
+# API DOCUMENTATION (DRF Spectacular)
+# ==============================================================================
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Google Dorks Toolkit API',
+    'DESCRIPTION': 'RESTful API for entity-focused security research and Google dorking',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    'COMPONENT_SPLIT_REQUEST': True,
+}
+
+# ==============================================================================
+# EMAIL CONFIGURATION
+# ==============================================================================
+
+# Email backend configuration
+# For development, use console backend to see emails in terminal
+# For production, configure SMTP settings below
+
+if DEBUG:
+    # Development: Print emails to console
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+else:
+    # Production: Use SMTP
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
+# SMTP Configuration (for production)
+# Update these with your actual email service credentials
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@informationextractor.com')
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+# Email timeout (seconds)
+EMAIL_TIMEOUT = 10

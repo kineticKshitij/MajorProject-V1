@@ -91,6 +91,32 @@
                             <i class="bi bi-tags"></i> Categories
                         </a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="entityDropdown" role="button"
+                            data-bs-toggle="dropdown">
+                            <i class="bi bi-bullseye"></i> Entities
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'googledorks:entity_dashboard' %}">
+                                    <i class="bi bi-speedometer2"></i> Dashboard
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'googledorks:entity_list' %}">
+                                    <i class="bi bi-list"></i> All Entities
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'googledorks:entity_create' %}">
+                                    <i class="bi bi-plus-circle"></i> Add Entity
+                                </a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'googledorks:entity_templates' %}">
+                                    <i class="bi bi-collection"></i> Search Templates
+                                </a></li>
+                            <li><a class="dropdown-item" href="{% url 'googledorks:entity_analytics' %}">
+                                    <i class="bi bi-graph-up"></i> Analytics
+                                </a></li>
+                        </ul>
+                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'googledorks:search_results' %}">
                             <i class="bi bi-collection"></i> Results

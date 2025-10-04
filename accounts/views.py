@@ -26,6 +26,7 @@ class CustomLoginView(LoginView):
 class CustomLogoutView(LogoutView):
     """Custom logout view"""
     next_page = reverse_lazy('googledorks:home')
+    http_method_names = ['get', 'post']  # Allow both GET and POST
     
     def dispatch(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -41,10 +42,17 @@ def register_view(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, f'Account created for {username}! You can now log in.')
-            return redirect('accounts:login')
+            try:
+                user = form.save()
+                username = form.cleaned_data.get('username')
+                messages.success(request, f'Account created for {username}! You can now log in.')
+                return redirect('accounts:login')
+            except Exception as e:
+                messages.error(request, f'An error occurred during registration: {str(e)}')
+                # Log the error for debugging
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.error(f"Registration error for user {form.cleaned_data.get('username', 'unknown')}: {e}")
     else:
         form = CustomUserCreationForm()
     

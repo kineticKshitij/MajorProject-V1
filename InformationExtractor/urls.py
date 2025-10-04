@@ -24,6 +24,11 @@ def redirect_to_dorks(request):
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', redirect_to_dorks),
+    
+    # API endpoints
+    path('api/', include('InformationExtractor.api_urls')),
+    
+    # Traditional Django views (for backward compatibility and admin)
     path('accounts/', include('accounts.urls')),
     path('dorks/', include('googledorks.urls')),
     path('chat/', include('chatbot.urls')),

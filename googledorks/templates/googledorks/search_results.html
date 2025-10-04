@@ -36,7 +36,7 @@
                         <label for="interesting" class="form-label">Filter</label>
                         <select class="form-select" id="interesting" name="interesting">
                             <option value="">All Results</option>
-                            <option value="true" {% if current_filters.interesting == "true" %}selected{% endif %}>
+                            <option value="true" {% if current_filters.interesting=="true" %}selected{% endif %}>
                                 Interesting Only
                             </option>
                         </select>

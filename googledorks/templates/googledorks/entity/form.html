@@ -1,0 +1,332 @@
+{% extends 'googledorks/base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h1 class="h3 mb-0">{{ title }}</h1>
+                    <p class="text-muted">
+                        {% if entity %}
+                        Update entity information and research parameters
+                        {% else %}
+                        Add a new entity for targeted research
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    {% if entity %}
+                    <a href="{% url 'googledorks:entity_detail' entity.pk %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Entity
+                    </a>
+                    {% else %}
+                    <a href="{% url 'googledorks:entity_list' %}" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to List
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Form -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">
+                        <i class="bi bi-info-circle"></i> Entity Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Basic Information -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="bi bi-card-text"></i> Basic Information
+                                </h6>
+                            </div>
+
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label for="{{ form.name.id_for_label }}" class="form-label">
+                                        Entity Name <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.name }}
+                                    {% if form.name.errors %}
+                                    <div class="text-danger small">{{ form.name.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.entity_type.id_for_label }}" class="form-label">
+                                        Type <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.entity_type }}
+                                    {% if form.entity_type.errors %}
+                                    <div class="text-danger small">{{ form.entity_type.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="{{ form.description.id_for_label }}"
+                                        class="form-label">Description</label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                    <div class="text-danger small">{{ form.description.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Details -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="bi bi-building"></i> Details
+                                </h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.industry.id_for_label }}" class="form-label">Industry</label>
+                                    {{ form.industry }}
+                                    {% if form.industry.errors %}
+                                    <div class="text-danger small">{{ form.industry.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.location.id_for_label }}" class="form-label">Location</label>
+                                    {{ form.location }}
+                                    {% if form.location.errors %}
+                                    <div class="text-danger small">{{ form.location.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.founded_date.id_for_label }}" class="form-label">Founded
+                                        Date</label>
+                                    {{ form.founded_date }}
+                                    {% if form.founded_date.errors %}
+                                    <div class="text-danger small">{{ form.founded_date.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.website.id_for_label }}" class="form-label">Website</label>
+                                    {{ form.website }}
+                                    {% if form.website.errors %}
+                                    <div class="text-danger small">{{ form.website.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Alternative Names and Domains -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="bi bi-tags"></i> Alternative Information
+                                </h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.aliases_text.id_for_label }}" class="form-label">
+                                        Alternative Names
+                                        <i class="bi bi-info-circle"
+                                            title="Alternative names, acronyms, abbreviations"></i>
+                                    </label>
+                                    {{ form.aliases_text }}
+                                    <div class="form-text">{{ form.aliases_text.help_text }}</div>
+                                    {% if form.aliases_text.errors %}
+                                    <div class="text-danger small">{{ form.aliases_text.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.domains_text.id_for_label }}" class="form-label">
+                                        Associated Domains
+                                        <i class="bi bi-info-circle" title="Known domains and subdomains"></i>
+                                    </label>
+                                    {{ form.domains_text }}
+                                    <div class="form-text">{{ form.domains_text.help_text }}</div>
+                                    {% if form.domains_text.errors %}
+                                    <div class="text-danger small">{{ form.domains_text.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="{{ form.tags_text.id_for_label }}" class="form-label">
+                                        Tags
+                                        <i class="bi bi-info-circle" title="Custom tags for categorization"></i>
+                                    </label>
+                                    {{ form.tags_text }}
+                                    <div class="form-text">{{ form.tags_text.help_text }}</div>
+                                    {% if form.tags_text.errors %}
+                                    <div class="text-danger small">{{ form.tags_text.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Social Media -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="bi bi-share"></i> Social Media Handles
+                                </h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.twitter_handle.id_for_label }}" class="form-label">
+                                        <i class="bi bi-twitter"></i> Twitter
+                                    </label>
+                                    {{ form.twitter_handle }}
+                                    {% if form.twitter_handle.errors %}
+                                    <div class="text-danger small">{{ form.twitter_handle.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.linkedin_handle.id_for_label }}" class="form-label">
+                                        <i class="bi bi-linkedin"></i> LinkedIn
+                                    </label>
+                                    {{ form.linkedin_handle }}
+                                    {% if form.linkedin_handle.errors %}
+                                    <div class="text-danger small">{{ form.linkedin_handle.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.facebook_handle.id_for_label }}" class="form-label">
+                                        <i class="bi bi-facebook"></i> Facebook
+                                    </label>
+                                    {{ form.facebook_handle }}
+                                    {% if form.facebook_handle.errors %}
+                                    <div class="text-danger small">{{ form.facebook_handle.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="{{ form.instagram_handle.id_for_label }}" class="form-label">
+                                        <i class="bi bi-instagram"></i> Instagram
+                                    </label>
+                                    {{ form.instagram_handle }}
+                                    {% if form.instagram_handle.errors %}
+                                    <div class="text-danger small">{{ form.instagram_handle.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Research Settings -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="text-primary border-bottom pb-2 mb-3">
+                                    <i class="bi bi-gear"></i> Research Settings
+                                </h6>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.priority.id_for_label }}" class="form-label">Priority</label>
+                                    {{ form.priority }}
+                                    {% if form.priority.errors %}
+                                    <div class="text-danger small">{{ form.priority.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                                    {{ form.status }}
+                                    {% if form.status.errors %}
+                                    <div class="text-danger small">{{ form.status.errors.0 }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-end">
+                            {% if entity %}
+                            <a href="{% url 'googledorks:entity_detail' entity.pk %}"
+                                class="btn btn-outline-secondary me-2">
+                                Cancel
+                            </a>
+                            {% else %}
+                            <a href="{% url 'googledorks:entity_list' %}" class="btn btn-outline-secondary me-2">
+                                Cancel
+                            </a>
+                            {% endif %}
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i>
+                                {% if entity %}
+                                Update Entity
+                                {% else %}
+                                Create Entity
+                                {% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Add some basic form validation feedback
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                const requiredFields = form.querySelectorAll('[required]');
+                let isValid = true;
+
+                requiredFields.forEach(field => {
+                    if (!field.value.trim()) {
+                        field.classList.add('is-invalid');
+                        isValid = false;
+                    } else {
+                        field.classList.remove('is-invalid');
+                    }
+                });
+
+                if (!isValid) {
+                    e.preventDefault();
+                    alert('Please fill in all required fields.');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

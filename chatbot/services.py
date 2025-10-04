@@ -44,11 +44,8 @@ class GeminiChatService:
         """Format message history for Gemini API"""
         formatted_messages = []
         
-        # Add system prompt first
-        formatted_messages.append({
-            "role": "system",
-            "parts": [{"text": self.system_prompt}]
-        })
+        # Don't add system prompt here - it will be added as system_instruction
+        # The Gemini API doesn't support "system" role in contents
         
         for msg in messages[-self.max_history:]:  # Limit history
             role = "user" if msg["message_type"] == "user" else "model"
@@ -92,7 +89,129 @@ class GeminiChatService:
         
         return ""
     
-    def enhance_prompt_with_context(self, user_message: str, session_id: str = None) -> str:
+    def get_entity_context(self, user_message: str, user=None) -> str:
+        """Get relevant entity information based on user message"""
+        # Import here to avoid circular imports
+        from googledorks.models import Entity, EntityType, EntitySearchTemplate
+        from django.db import models
+        
+        # Extract keywords from user message
+        keywords = user_message.lower().split()
+        entity_keywords = ['company', 'person', 'organization', 'government', 'educational', 'domain', 'website']
+        
+        # Check if message mentions entities
+        if not any(keyword in user_message.lower() for keyword in entity_keywords):
+            return ""
+        
+        context = "\n\nEntity Research Context:\n"
+        
+        # Get recent entities for the user
+        if user and hasattr(user, 'entity_set'):
+            recent_entities = user.entity_set.order_by('-created_at')[:3]
+            if recent_entities:
+                context += "Your Recent Entities:\n"
+                for entity in recent_entities:
+                    context += f"- **{entity.name}** ({entity.entity_type.name})\n"
+                    if entity.description:
+                        context += f"  Description: {entity.description[:80]}...\n"
+                context += "\n"
+        
+        # Look for relevant entity types
+        relevant_types = EntityType.objects.filter(
+            models.Q(name__icontains=' '.join(keywords)) |
+            models.Q(description__icontains=' '.join(keywords))
+        )[:3]
+        
+        if relevant_types:
+            context += "Relevant Entity Types:\n"
+            for entity_type in relevant_types:
+                context += f"- **{entity_type.name}**: {entity_type.description}\n"
+                
+                # Get sample search templates for this type
+                templates = EntitySearchTemplate.objects.filter(
+                    entity_type=entity_type,
+                    is_active=True
+                )[:2]
+                
+                if templates:
+                    context += "  Sample Search Templates:\n"
+                    for template in templates:
+                        context += f"    • {template.name}: {template.description[:60]}...\n"
+                context += "\n"
+        
+        # Suggest entity-related actions
+        if any(keyword in user_message.lower() for keyword in ['find', 'search', 'research', 'investigate']):
+            context += "💡 Entity Research Suggestions:\n"
+            context += "- Use our Entity Management system to organize your research targets\n"
+            context += "- Create search templates for specific entity types\n"
+            context += "- Track search sessions and results for better organization\n"
+            context += "- Build relationship maps between entities\n\n"
+        
+        # Add personalized recommendations if user is provided
+        if user:
+            recommendations = self.get_entity_recommendations(user)
+            if recommendations:
+                context += recommendations
+        
+        return context
+    
+    def get_entity_recommendations(self, user, entity_type_name: str = None) -> str:
+        """Get intelligent entity research recommendations for the user"""
+        # Import here to avoid circular imports
+        from googledorks.models import Entity, EntityType, EntitySearchTemplate, EntitySearchSession
+        
+        if not user or not hasattr(user, 'entity_set'):
+            return ""
+        
+        recommendations = "\n🎯 **Intelligent Research Recommendations:**\n"
+        
+        # Get user's entity research activity
+        user_entities = user.entity_set.all()
+        recent_sessions = EntitySearchSession.objects.filter(user=user).order_by('-created_at')[:5]
+        
+        if not user_entities.exists():
+            recommendations += "- **Get Started**: Create your first entity to begin organized research\n"
+            recommendations += "- **Entity Types**: Consider researching companies, people, or organizations\n"
+            recommendations += "- **Templates**: Use our pre-built search templates for quick results\n"
+            return recommendations
+        
+        # Analyze user's research patterns
+        entity_types_used = set(entity.entity_type.name for entity in user_entities)
+        
+        # Get unused entity types
+        all_types = set(EntityType.objects.values_list('name', flat=True))
+        unused_types = all_types - entity_types_used
+        
+        if unused_types:
+            recommendations += f"- **Expand Research**: Try investigating {', '.join(list(unused_types)[:2])} entities\n"
+        
+        # Get popular templates not used by user
+        if recent_sessions.exists():
+            used_templates = set()
+            for session in recent_sessions:
+                if session.search_template:
+                    used_templates.add(session.search_template.id)
+            
+            popular_templates = EntitySearchTemplate.objects.filter(
+                is_active=True
+            ).exclude(id__in=used_templates)[:3]
+            
+            if popular_templates:
+                recommendations += "- **New Templates**: Try these search approaches:\n"
+                for template in popular_templates:
+                    recommendations += f"  • {template.name} - {template.description[:50]}...\n"
+        
+        # Suggest relationship mapping
+        if user_entities.count() > 1:
+            recommendations += "- **Relationship Mapping**: Connect your entities to discover relationships\n"
+        
+        # Suggest bulk operations
+        if user_entities.count() > 5:
+            recommendations += "- **Bulk Analysis**: Use bulk export to analyze your research data\n"
+        
+        return recommendations
+    
+    def enhance_prompt_with_context(self, user_message: str, session_id: str = None, user=None) -> str:
         """Enhance user message with relevant context"""
         enhanced_message = user_message
         
@@ -100,6 +219,11 @@ class GeminiChatService:
         dork_context = self.get_dork_context(user_message)
         if dork_context:
             enhanced_message += dork_context
+        
+        # Add entity context if relevant
+        entity_context = self.get_entity_context(user_message, user)
+        if entity_context:
+            enhanced_message += entity_context
         
         # Add session context if available
         if session_id:
@@ -111,11 +235,12 @@ class GeminiChatService:
         
         return enhanced_message
     
-    async def generate_response(
+    def generate_response(
         self, 
         user_message: str, 
         message_history: List[Dict], 
-        session_id: str = None
+        session_id: str = None,
+        user=None
     ) -> Dict:
         """Generate a response using Gemini API"""
         
@@ -131,7 +256,7 @@ class GeminiChatService:
         
         try:
             # Enhance the message with context
-            enhanced_message = self.enhance_prompt_with_context(user_message, session_id)
+            enhanced_message = self.enhance_prompt_with_context(user_message, session_id, user)
             
             # Prepare conversation history
             formatted_history = self.format_message_history(message_history)
@@ -147,6 +272,7 @@ class GeminiChatService:
                 model=self.model_name,
                 contents=contents,
                 config=types.GenerateContentConfig(
+                    system_instruction=self.system_prompt,  # Add system instruction here
                     thinking_config=types.ThinkingConfig(thinking_budget=0)  # Disable thinking for faster response
                 )
             )

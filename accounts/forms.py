@@ -72,8 +72,7 @@ class CustomUserCreationForm(UserCreationForm):
         user.gemini_api_key = self.cleaned_data.get('gemini_api_key', '')
         if commit:
             user.save()
-            # Create user profile
-            UserProfile.objects.create(user=user)
+            # UserProfile is automatically created by signals.py
         return user
 
 

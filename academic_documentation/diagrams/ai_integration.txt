@@ -1,0 +1,312 @@
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           AI Integration Architecture                            │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+                              GEMINI AI SERVICE LAYER
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                                User Request                                      │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                       │
+                                       ▼
+                          ┌─────────────────────────┐
+                          │   Django View Layer     │
+                          │ • chatbot/views.py      │
+                          │ • send_message()        │
+                          └─────────────────────────┘
+                                       │
+                                       ▼
+                          ┌─────────────────────────┐
+                          │   Service Factory       │
+                          │ GeminiChatService.      │
+                          │ get_service_for_user()  │
+                          └─────────────────────────┘
+                    ┌─────────────┴─────────────┐
+                    │                           │
+                    ▼                           ▼
+        ┌─────────────────────┐       ┌─────────────────────┐
+        │   User has API Key  │       │   User lacks API    │
+        │                     │       │   Key               │
+        │ • Personal Gemini   │       │                     │
+        │   Service Instance  │       │ • Fallback          │
+        │ • User's Quota      │       │   Response          │
+        │ • Personalized      │       │ • Setup Prompt      │
+        │   Responses         │       │ • Limited Features  │
+        └─────────────────────┘       └─────────────────────┘
+                    │                           │
+                    └─────────────┬─────────────┘
+                                  │
+                                  ▼
+                          ┌─────────────────────────┐
+                          │   Message Processing    │
+                          └─────────────────────────┘
+                                  │
+                                  ▼
+                  ┌───────────────────────────────────┐
+                  │        Context Enhancement        │
+                  │                                   │
+                  │ • Load Conversation History       │
+                  │ • Extract Relevant Google Dorks   │
+                  │ • Add Security Research Context   │
+                  │ • Apply Ethical Guidelines        │
+                  └───────────────────────────────────┘
+                                  │
+                                  ▼
+                          ┌─────────────────────────┐
+                          │   Google Gemini API     │
+                          │     Communication       │
+                          └─────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+                          CONTEXT ENHANCEMENT PIPELINE
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                             User Message Input                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      Keyword Extraction           │
+                  │                                   │
+                  │ • NLP Keyword Analysis            │
+                  │ • Security Term Recognition       │
+                  │ • Intent Classification           │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │     Dork Database Query           │
+                  │                                   │
+                  │ • Search by Keywords              │
+                  │ • Category Matching               │
+                  │ • Tag-based Filtering             │
+                  │ • Relevance Scoring               │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │    Context Compilation            │
+                  │                                   │
+                  │ • Top 5 Relevant Dorks            │
+                  │ • Category Information            │
+                  │ • Usage Examples                  │
+                  │ • Risk Assessments                │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │   Conversation History            │
+                  │                                   │
+                  │ • Previous 10 Messages            │
+                  │ • Context Preservation            │
+                  │ • User Preferences                │
+                  │ • Session Metadata                │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │     Prompt Engineering            │
+                  │                                   │
+                  │ • System Instructions             │
+                  │ • Ethical Guidelines              │
+                  │ • Security Focus Prompt           │
+                  │ • Response Format Instructions    │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      Gemini API Call              │
+                  └───────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+                            AI RESPONSE PROCESSING
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           Gemini API Response                                   │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      Response Validation          │
+                  │                                   │
+                  │ • Content Safety Check            │
+                  │ • Ethical Guidelines Compliance   │
+                  │ • Response Quality Assessment     │
+                  │ • Error Handling                  │
+                  └───────────────────────────────────┘
+                         │                    │
+                         │ Valid              │ Invalid/Error
+                         ▼                    ▼
+        ┌─────────────────────────┐   ┌─────────────────────────┐
+        │   Process Valid         │   │   Generate Fallback    │
+        │   Response              │   │   Response              │
+        │                         │   │                         │
+        │ • Format Content        │   │ • Error Message         │
+        │ • Add Metadata          │   │ • Helpful Instructions  │
+        │ • Track Metrics         │   │ • Retry Suggestions     │
+        └─────────────────────────┘   └─────────────────────────┘
+                         │                    │
+                         └─────────┬──────────┘
+                                   │
+                                   ▼
+                  ┌───────────────────────────────────┐
+                  │      Response Enhancement         │
+                  │                                   │
+                  │ • Add Related Dorks               │
+                  │ • Include Usage Examples          │
+                  │ • Provide Legal Disclaimers       │
+                  │ • Format for UI Display           │
+                  └───────────────────────────────────┘
+                                   │
+                                   ▼
+                  ┌───────────────────────────────────┐
+                  │      Database Storage             │
+                  │                                   │
+                  │ • Save Message to ChatMessage     │
+                  │ • Update Session Timestamp        │
+                  │ • Record Performance Metrics      │
+                  │ • Update Usage Statistics         │
+                  └───────────────────────────────────┘
+                                   │
+                                   ▼
+                  ┌───────────────────────────────────┐
+                  │      UI Response                  │
+                  │                                   │
+                  │ • JSON Response Format            │
+                  │ • Real-time UI Update             │
+                  │ • Feedback Options Display        │
+                  │ • Session Management              │
+                  └───────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+                              API KEY MANAGEMENT
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                            User API Key Storage                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      Encryption Layer             │
+                  │                                   │
+                  │ • Django's Field Encryption       │
+                  │ • Secure Key Storage               │
+                  │ • Environment Variables           │
+                  │ • Access Control                  │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      Service Instantiation        │
+                  │                                   │
+                  │ class GeminiChatService:          │
+                  │   @classmethod                    │
+                  │   def get_service_for_user(user): │
+                  │     if user.has_gemini_api_key(): │
+                  │       return GeminiChatService(   │
+                  │         api_key=user.api_key)     │
+                  │     return GeminiChatService()    │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      API Communication            │
+                  │                                   │
+                  │ • User-specific Quotas            │
+                  │ • Personal Rate Limiting          │
+                  │ • Individual Usage Tracking       │
+                  │ • Error Handling per User         │
+                  └───────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+                               SECURITY MEASURES
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              Input Validation                                   │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      Message Sanitization         │
+                  │                                   │
+                  │ • XSS Prevention                  │
+                  │ • SQL Injection Protection        │
+                  │ • Input Length Limits             │
+                  │ • Content Type Validation         │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      API Key Protection           │
+                  │                                   │
+                  │ • Encrypted Database Storage      │
+                  │ • Memory Protection               │
+                  │ • Secure Transmission             │
+                  │ • Access Logging                  │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      Rate Limiting                │
+                  │                                   │
+                  │ • Per-User Limits                 │
+                  │ • API Quota Management            │
+                  │ • Abuse Prevention                │
+                  │ • Usage Monitoring                │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      Audit Logging                │
+                  │                                   │
+                  │ • API Call Logging                │
+                  │ • User Activity Tracking          │
+                  │ • Error Event Recording           │
+                  │ • Security Event Monitoring       │
+                  └───────────────────────────────────┘
+
+════════════════════════════════════════════════════════════════════════════════════
+
+                             PERFORMANCE OPTIMIZATION
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              Async Processing                                   │
+└─────────────────────────────────────────────────────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      Async API Calls              │
+                  │                                   │
+                  │ async def generate_response():    │
+                  │   # Non-blocking API call         │
+                  │   response = await gemini.call()  │
+                  │   return response                 │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      Caching Strategy             │
+                  │                                   │
+                  │ • Session-based Caching           │
+                  │ • Response Caching                │
+                  │ • Database Query Optimization     │
+                  │ • Static Content Caching          │
+                  └───────────────────────────────────┘
+                                       │
+                                       ▼
+                  ┌───────────────────────────────────┐
+                  │      Monitoring & Analytics       │
+                  │                                   │
+                  │ • Response Time Tracking          │
+                  │ • API Usage Metrics               │
+                  │ • Error Rate Monitoring           │
+                  │ • Performance Dashboards          │
+                  └───────────────────────────────────┘
+
+════════════════════════════════════════════════════════════════════════════════════

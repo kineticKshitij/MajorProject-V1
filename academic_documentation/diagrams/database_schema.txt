@@ -1,0 +1,216 @@
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                        Database Schema and Relationships                        │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+                                USER MANAGEMENT SCHEMA
+
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                                  User Model                                      │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│ PK │ id              │ AutoField       │ Primary Key                         │
+│    │ username        │ CharField(150)   │ Unique, Required                    │
+│    │ email           │ EmailField      │ Unique, Required                    │
+│    │ password        │ CharField(128)   │ Hashed, Required                    │
+│    │ first_name      │ CharField(30)    │ Optional                           │
+│    │ last_name       │ CharField(30)    │ Optional                           │
+│    │ gemini_api_key  │ CharField(255)   │ Encrypted, Optional                │
+│    │ is_active       │ BooleanField    │ Default: True                      │
+│    │ is_staff        │ BooleanField    │ Default: False                     │
+│    │ is_superuser    │ BooleanField    │ Default: False                     │
+│    │ date_joined     │ DateTimeField   │ Auto-add                           │
+│    │ last_login      │ DateTimeField   │ Auto-update                        │
+│    │ is_email_verified│ BooleanField   │ Default: False                     │
+└──────────────────────────────────────────────────────────────────────────────────┘
+                                         │
+                                         │ 1:1
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                                UserProfile Model                                 │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│ PK │ id              │ AutoField       │ Primary Key                         │
+│ FK │ user            │ OneToOneField   │ → User.id                          │
+│    │ bio             │ TextField       │ Optional                           │
+│    │ location        │ CharField(100)   │ Optional                           │
+│    │ birth_date      │ DateField       │ Optional                           │
+│    │ avatar          │ ImageField      │ Optional                           │
+│    │ website         │ URLField        │ Optional                           │
+│    │ github          │ CharField(100)   │ Optional                           │
+│    │ linkedin        │ CharField(100)   │ Optional                           │
+│    │ created_at      │ DateTimeField   │ Auto-add                           │
+│    │ updated_at      │ DateTimeField   │ Auto-update                        │
+└──────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+                            GOOGLE DORKS DATABASE SCHEMA
+
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                               DorkCategory Model                                 │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│ PK │ id              │ AutoField       │ Primary Key                         │
+│    │ name            │ CharField(100)   │ Unique, Required                    │
+│    │ description     │ TextField       │ Category explanation               │
+│    │ color_code      │ CharField(7)     │ Hex color for UI                   │
+│    │ icon            │ CharField(50)    │ Bootstrap icon class               │
+│    │ is_active       │ BooleanField    │ Default: True                      │
+│    │ created_at      │ DateTimeField   │ Auto-add                           │
+│    │ updated_at      │ DateTimeField   │ Auto-update                        │
+└──────────────────────────────────────────────────────────────────────────────────┘
+                                         │
+                                         │ 1:N
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                                GoogleDork Model                                  │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│ PK │ id              │ AutoField       │ Primary Key                         │
+│    │ title           │ CharField(200)   │ Dork name/title                     │
+│    │ dork_query      │ TextField       │ Google search string               │
+│    │ description     │ TextField       │ Detailed explanation               │
+│ FK │ category        │ ForeignKey      │ → DorkCategory.id                  │
+│    │ tags            │ CharField(500)   │ Comma-separated keywords           │
+│    │ risk_level      │ CharField(20)    │ Low/Medium/High                    │
+│    │ example_usage   │ TextField       │ Usage examples                     │
+│    │ legal_note      │ TextField       │ Legal considerations               │
+│    │ is_verified     │ BooleanField    │ Quality assurance                  │
+│    │ view_count      │ PositiveInteger │ Usage statistics                   │
+│    │ created_at      │ DateTimeField   │ Auto-add                           │
+│    │ updated_at      │ DateTimeField   │ Auto-update                        │
+└──────────────────────────────────────────────────────────────────────────────────┘
+                                         │
+                                         │ M:N
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                               UserBookmark Model                                 │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│ PK │ id              │ AutoField       │ Primary Key                         │
+│ FK │ user            │ ForeignKey      │ → User.id                          │
+│ FK │ dork            │ ForeignKey      │ → GoogleDork.id                    │
+│    │ notes           │ TextField       │ User's personal notes              │
+│    │ created_at      │ DateTimeField   │ Auto-add                           │
+└──────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+                              CHATBOT SYSTEM SCHEMA
+
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                                ChatSession Model                                 │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│ PK │ id              │ UUIDField       │ Primary Key (UUID4)                │
+│ FK │ user            │ ForeignKey      │ → User.id (Optional)               │
+│    │ title           │ CharField(200)   │ Auto-generated title               │
+│    │ created_at      │ DateTimeField   │ Auto-add                           │
+│    │ updated_at      │ DateTimeField   │ Auto-update                        │
+│    │ is_active       │ BooleanField    │ Default: True                      │
+│    │ session_data    │ JSONField       │ Metadata storage                   │
+└──────────────────────────────────────────────────────────────────────────────────┘
+                                         │
+                                         │ 1:N
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                                ChatMessage Model                                 │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│ PK │ id              │ UUIDField       │ Primary Key (UUID4)                │
+│ FK │ session         │ ForeignKey      │ → ChatSession.id                   │
+│    │ message_type    │ CharField(10)    │ user/bot/system                    │
+│    │ content         │ TextField       │ Message content                    │
+│    │ created_at      │ DateTimeField   │ Auto-add                           │
+│    │ tokens_used     │ PositiveInteger │ API usage tracking                 │
+│    │ response_time   │ FloatField      │ Performance metrics                │
+│    │ metadata        │ JSONField       │ Additional data                    │
+└──────────────────────────────────────────────────────────────────────────────────┘
+                                         │
+                                         │ 1:N
+                                         ▼
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                               ChatFeedback Model                                 │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│ PK │ id              │ AutoField       │ Primary Key                         │
+│ FK │ message         │ ForeignKey      │ → ChatMessage.id                   │
+│ FK │ user            │ ForeignKey      │ → User.id (Optional)               │
+│    │ feedback_type   │ CharField(20)    │ thumbs_up/thumbs_down/report       │
+│    │ comment         │ TextField       │ Optional feedback text             │
+│    │ created_at      │ DateTimeField   │ Auto-add                           │
+└──────────────────────────────────────────────────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────────────┐
+│                                ChatMetrics Model                                 │
+├──────────────────────────────────────────────────────────────────────────────────┤
+│ PK │ id              │ AutoField       │ Primary Key                         │
+│    │ date            │ DateField       │ Metrics date                       │
+│    │ total_sessions  │ PositiveInteger │ Daily session count                │
+│    │ total_messages  │ PositiveInteger │ Daily message count                │
+│    │ total_tokens    │ PositiveInteger │ Daily token usage                  │
+│    │ avg_response_time│ FloatField     │ Average response time              │
+│    │ unique_users    │ PositiveInteger │ Daily active users                 │
+└──────────────────────────────────────────────────────────────────────────────────┘
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+                              RELATIONSHIP DIAGRAM
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                            Entity Relationships                                  │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+        User ←─────────────── 1:1 ─────────────→ UserProfile
+         │
+         │ 1:N
+         ▼
+    UserBookmark ←─────────── N:1 ─────────────→ GoogleDork
+                                                      │
+                                                      │ N:1
+                                                      ▼
+                                                 DorkCategory
+
+        User ←─────────────── 1:N ─────────────→ ChatSession
+                                                      │
+                                                      │ 1:N
+                                                      ▼
+                                                 ChatMessage
+                                                      │
+                                                      │ 1:N
+                                                      ▼
+                                                 ChatFeedback
+
+═══════════════════════════════════════════════════════════════════════════════════
+
+                               DATABASE INDEXES
+
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                              Performance Indexes                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+User Model:
+  • Primary Key: id (Auto-indexed)
+  • Unique Index: username
+  • Unique Index: email
+  • Index: is_active, date_joined
+
+GoogleDork Model:
+  • Primary Key: id (Auto-indexed)
+  • Index: category_id
+  • Index: risk_level
+  • Index: is_verified
+  • Full-text Index: title, description, tags
+
+ChatSession Model:
+  • Primary Key: id (UUID, Auto-indexed)
+  • Index: user_id
+  • Index: created_at, updated_at
+  • Index: is_active
+
+ChatMessage Model:
+  • Primary Key: id (UUID, Auto-indexed)
+  • Index: session_id
+  • Index: message_type
+  • Index: created_at
+
+ChatMetrics Model:
+  • Primary Key: id (Auto-indexed)
+  • Unique Index: date
+  • Index: date (range queries)
+
+════════════════════════════════════════════════════════════════════════════════════

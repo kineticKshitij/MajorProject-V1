@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
-from .models import User, UserProfile
+from .models import User, UserProfile, PasswordResetOTP
 
 
 class UserProfileInline(admin.StackedInline):
@@ -29,3 +29,21 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(User, UserAdmin)
 admin.site.register(UserProfile)
+
+
+@admin.register(PasswordResetOTP)
+class PasswordResetOTPAdmin(admin.ModelAdmin):
+    list_display = ('user', 'otp_code', 'created_at', 'expires_at', 'is_used', 'is_valid_status', 'ip_address')
+    list_filter = ('is_used', 'created_at')
+    search_fields = ('user__username', 'user__email', 'otp_code', 'ip_address')
+    readonly_fields = ('created_at', 'expires_at')
+    ordering = ('-created_at',)
+    
+    def is_valid_status(self, obj):
+        return obj.is_valid()
+    is_valid_status.boolean = True
+    is_valid_status.short_description = 'Valid'
+    
+    def has_add_permission(self, request):
+        # Prevent manual creation of OTPs through admin
+        return False

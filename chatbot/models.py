@@ -8,6 +8,7 @@ class ChatSession(models.Model):
     """Chat sessions to group conversations"""
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True, blank=True)
+    entity = models.ForeignKey('googledorks.Entity', on_delete=models.SET_NULL, null=True, blank=True, related_name='chat_sessions')
     title = models.CharField(max_length=200, default="New Chat")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -55,9 +56,10 @@ class ChatMessage(models.Model):
 class ChatFeedback(models.Model):
     """User feedback on bot responses"""
     FEEDBACK_TYPES = [
-        ('thumbs_up', 'Thumbs Up'),
-        ('thumbs_down', 'Thumbs Down'),
-        ('report', 'Report Issue'),
+        ('helpful', 'Helpful'),
+        ('not_helpful', 'Not Helpful'),
+        ('incorrect', 'Incorrect'),
+        ('inappropriate', 'Inappropriate'),
     ]
     
     message = models.ForeignKey(ChatMessage, on_delete=models.CASCADE, related_name='feedback')
