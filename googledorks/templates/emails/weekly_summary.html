@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weekly Summary</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background-color: #ffffff;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .period {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1e40af;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #1e40af;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section {
+            margin: 30px 0;
+        }
+
+        .section-title {
+            color: #1f2937;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 8px;
+        }
+
+        .dork-item {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+
+        .dork-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .dork-meta {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .dork-count {
+            display: inline-block;
+            background-color: #2563eb;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 8px;
+        }
+
+        .alert-item {
+            background-color: #fef3c7;
+            border-left: 3px solid #f59e0b;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            color: #92400e;
+            margin-bottom: 4px;
+        }
+
+        .alert-time {
+            font-size: 11px;
+            color: #78350f;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: #f59e0b;
+            color: white !important;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .footer {
+            background-color: #f9fafb;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer a {
+            color: #f59e0b;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📊 Weekly Summary Report</h1>
+        </div>
+
+        <div class="content">
+            <div class="period">
+                {{ summary.period_start|date:"F j, Y" }} - {{ summary.period_end|date:"F j, Y" }}
+            </div>
+
+            <p>Hi {{ user_name }},</p>
+            <p>Here's your weekly activity summary for the Google Dorks Toolkit:</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <span class="stat-number">{{ summary.total_searches|default:"0" }}</span>
+                    <span class="stat-label">Total Searches</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-number">{{ summary.total_results|default:"0" }}</span>
+                    <span class="stat-label">Total Results</span>
+                </div>
+            </div>
+
+            {% if summary.top_dorks %}
+            <div class="section">
+                <div class="section-title">🏆 Top Performing Dorks</div>
+                {% for dork in summary.top_dorks %}
+                <div class="dork-item">
+                    <div class="dork-title">
+                        {{ dork.title }}
+                        <span class="dork-count">{{ dork.result_count }} results</span>
+                    </div>
+                    <div class="dork-meta">
+                        Executed {{ dork.execution_count }} {{ dork.execution_count|pluralize:"time,times" }}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% if summary.recent_alerts %}
+            <div class="section">
+                <div class="section-title">🔔 Recent Alerts</div>
+                {% for alert in summary.recent_alerts %}
+                <div class="alert-item">
+                    <div class="alert-title">{{ alert.name }}</div>
+                    <div class="alert-time">
+                        Triggered {{ alert.triggered_at|date:"F j, g:i a" }}
+                        ({{ alert.new_results_count }} new {{ alert.new_results_count|pluralize:"result,results" }})
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div style="text-align: center; margin-top: 30px;">
+                <a href="{{ site_url }}/dashboard" class="cta-button">
+                    View Full Dashboard
+                </a>
+            </div>
+
+            <p style="margin-top: 30px; font-size: 13px; color: #6b7280;">
+                Keep up the great work! Your consistent use of the toolkit helps in discovering and monitoring potential
+                security exposures.
+            </p>
+        </div>
+
+        <div class="footer">
+            <p>
+                <strong>{{ site_name }}</strong><br>
+                <a href="{{ site_url }}">Visit Dashboard</a> |
+                <a href="{{ site_url }}/settings">Email Settings</a>
+            </p>
+            <p style="margin-top: 10px;">
+                © {{ current_year }} {{ site_name }}. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

@@ -93,14 +93,14 @@ class SocialProfile(models.Model):
     # Platform info
     platform = models.CharField(max_length=20, choices=SocialPlatform.choices)
     username = models.CharField(max_length=255, db_index=True)
-    user_id = models.CharField(max_length=255, blank=True, help_text="Platform-specific user ID")
+    user_id = models.CharField(max_length=255, blank=True, default='', help_text="Platform-specific user ID")
     profile_url = models.URLField()
     
     # Profile data
-    display_name = models.CharField(max_length=255, blank=True)
-    bio = models.TextField(blank=True)
-    avatar_url = models.URLField(blank=True)
-    banner_url = models.URLField(blank=True)
+    display_name = models.CharField(max_length=255, blank=True, default='')
+    bio = models.TextField(blank=True, default='')
+    avatar_url = models.URLField(blank=True, default='')
+    banner_url = models.URLField(blank=True, default='')
     
     # Metrics
     followers_count = models.IntegerField(default=0)
@@ -109,8 +109,8 @@ class SocialProfile(models.Model):
     verified = models.BooleanField(default=False)
     
     # Additional info
-    location = models.CharField(max_length=255, blank=True)
-    website = models.URLField(blank=True)
+    location = models.CharField(max_length=255, blank=True, default='')
+    website = models.URLField(blank=True, default='')
     joined_date = models.DateField(null=True, blank=True)
     
     # Timestamps

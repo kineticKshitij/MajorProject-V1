@@ -1,0 +1,431 @@
+.breach-checker-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.breach-checker-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.breach-checker-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    color: #666;
+    margin-bottom: 0.5rem;
+}
+
+.disclaimer {
+    font-size: 0.9rem;
+    color: #999;
+    margin-top: 0.5rem;
+}
+
+.disclaimer a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.disclaimer a:hover {
+    text-decoration: underline;
+}
+
+/* Input Section */
+.breach-checker-input {
+    max-width: 600px;
+    margin: 0 auto 3rem;
+}
+
+.input-group {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.email-input {
+    flex: 1;
+    padding: 1rem;
+    font-size: 1rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+.email-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.email-input:disabled {
+    background-color: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.check-button {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+    font-weight: 600;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    white-space: nowrap;
+}
+
+.check-button:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.check-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #ffffff;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Alerts */
+.alert {
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 1.5rem;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert-error {
+    background-color: #fee;
+    border: 2px solid #fcc;
+    color: #c33;
+}
+
+.alert-success {
+    background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
+    border: 2px solid #4caf50;
+    color: #155724;
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    border: 2px solid #f44336;
+    color: #721c24;
+}
+
+.alert-icon {
+    font-size: 3rem;
+    flex-shrink: 0;
+}
+
+.alert-content {
+    flex: 1;
+}
+
+.alert-content h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+}
+
+.alert-content p {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+}
+
+.tip {
+    margin-top: 1rem;
+    padding: 1rem;
+    background-color: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+/* Risk Badge */
+.risk-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.risk-green {
+    background-color: #4caf50;
+    color: white;
+}
+
+.risk-yellow {
+    background-color: #ffc107;
+    color: #333;
+}
+
+.risk-orange {
+    background-color: #ff9800;
+    color: white;
+}
+
+.risk-red {
+    background-color: #f44336;
+    color: white;
+}
+
+/* Recommendations */
+.recommendations {
+    margin-top: 1.5rem;
+    padding: 1.5rem;
+    background-color: rgba(255, 255, 255, 0.7);
+    border-radius: 8px;
+    border-left: 4px solid #f44336;
+}
+
+.recommendations h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.recommendations ul {
+    margin: 0;
+    padding-left: 1.5rem;
+}
+
+.recommendations li {
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+    color: #444;
+}
+
+/* Breaches List */
+.breaches-list {
+    margin-top: 2rem;
+}
+
+.breaches-list h3 {
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+.breach-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.breach-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.breach-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.breach-logo {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.breach-title {
+    flex: 1;
+}
+
+.breach-title h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.3rem;
+    color: #333;
+}
+
+.breach-domain {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: normal;
+}
+
+.verified-badge {
+    background-color: #4caf50;
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.breach-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.breach-date,
+.breach-count {
+    margin: 0;
+    color: #555;
+}
+
+.breach-description {
+    margin: 1rem 0;
+    padding: 1rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    line-height: 1.6;
+    color: #444;
+}
+
+.data-compromised {
+    margin-top: 1rem;
+}
+
+.data-compromised strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #333;
+}
+
+.data-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.data-tag {
+    background-color: #667eea;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 16px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+/* Footer */
+.breach-checker-footer {
+    margin-top: 3rem;
+}
+
+.info-box {
+    background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.info-box h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.info-box p {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+    color: #444;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .breach-checker-container {
+        padding: 1rem;
+    }
+
+    .breach-checker-header h1 {
+        font-size: 2rem;
+    }
+
+    .input-group {
+        flex-direction: column;
+    }
+
+    .check-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .alert {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .alert-icon {
+        font-size: 2rem;
+    }
+
+    .breach-header {
+        flex-wrap: wrap;
+    }
+
+    .data-tags {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .breach-checker-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .subtitle {
+        font-size: 1rem;
+    }
+
+    .breach-card {
+        padding: 1rem;
+    }
+
+    .breach-title h4 {
+        font-size: 1.1rem;
+    }
+}

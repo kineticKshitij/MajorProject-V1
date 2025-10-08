@@ -26,4 +26,8 @@ router.register(r'entity-notes', api_views.EntityNoteViewSet, basename='entity-n
 # The API URLs are now determined automatically by the router
 urlpatterns = [
     path('', include(router.urls)),
+    
+    # Data Breach Checker endpoints (non-REST, simple function views)
+    path('check-breach/', api_views.check_email_breach, name='check-breach'),
+    path('check-password/', api_views.check_password_breach, name='check-password'),
 ]

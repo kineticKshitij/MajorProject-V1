@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ alert_name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            background-color: #ffffff;
+            margin: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .badge {
+            display: inline-block;
+            background-color: #10b981;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+
+        .content {
+            padding: 30px 20px;
+        }
+
+        .alert-info {
+            background-color: #eff6ff;
+            border-left: 4px solid #2563eb;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+
+        .alert-info h2 {
+            margin: 0 0 10px 0;
+            font-size: 16px;
+            color: #1e40af;
+        }
+
+        .query-box {
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
+            padding: 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            margin: 15px 0;
+            word-break: break-all;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 20px 0;
+            border-top: 1px solid #e5e7eb;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2563eb;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-item {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 10px 0;
+        }
+
+        .result-title {
+            font-weight: 600;
+            color: #1e40af;
+            margin: 0 0 8px 0;
+            font-size: 14px;
+        }
+
+        .result-url {
+            color: #10b981;
+            font-size: 12px;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .result-snippet {
+            color: #6b7280;
+            font-size: 13px;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: #2563eb;
+            color: white !important;
+            text-decoration: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-weight: 600;
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .cta-button:hover {
+            background-color: #1d4ed8;
+        }
+
+        .footer {
+            background-color: #f9fafb;
+            padding: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6b7280;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .timestamp {
+            color: #9ca3af;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔔 New Results Alert</h1>
+            <span class="badge">{{ new_results_count }} New {{ new_results_count|pluralize:"Result,Results" }}</span>
+        </div>
+
+        <div class="content">
+            <div class="alert-info">
+                <h2>{{ alert_name }}</h2>
+                <p>Your monitored dork query has found new results!</p>
+            </div>
+
+            <div class="query-box">
+                {{ dork_query }}
+            </div>
+
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-value">{{ new_results_count }}</span>
+                    <span class="stat-label">New Results</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value">{{ total_results }}</span>
+                    <span class="stat-label">Total Results</span>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 30px; color: #1f2937;">Latest Results Preview:</h3>
+
+            {% for result in results_preview %}
+            <div class="result-item">
+                <div class="result-title">{{ result.title }}</div>
+                <a href="{{ result.url }}" class="result-url" target="_blank">{{ result.url }}</a>
+                {% if result.snippet %}
+                <div class="result-snippet">{{ result.snippet }}</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            {% if has_more %}
+            <p style="text-align: center; color: #6b7280; margin-top: 15px;">
+                + {{ remaining_count }} more {{ remaining_count|pluralize:"result,results" }}
+            </p>
+            {% endif %}
+
+            <div style="text-align: center; margin-top: 30px;">
+                {% if dork_id %}
+                <a href="{{ site_url }}/dorks/{{ dork_id }}/results" class="cta-button">
+                    View All Results
+                </a>
+                {% else %}
+                <a href="{{ site_url }}/dashboard" class="cta-button">
+                    Go to Dashboard
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="timestamp">
+                Alert triggered at {{ timestamp|date:"F j, Y, g:i a" }}
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>
+                <strong>{{ site_name }}</strong><br>
+                <a href="{{ site_url }}">Visit Dashboard</a> |
+                <a href="{{ site_url }}/settings">Manage Alerts</a>
+            </p>
+            <p style="margin-top: 10px;">
+                © {{ current_year }} {{ site_name }}. All rights reserved.
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>

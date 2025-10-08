@@ -25,8 +25,9 @@ const NewCrawlJob = () => {
     // Create job mutation
     const createJobMutation = useMutation({
         mutationFn: (data: CreateCrawlJob) => crawlerService.createJob(data),
-        onSuccess: (data) => {
-            navigate(`/crawler/jobs/${data.id}`);
+        onSuccess: () => {
+            // Redirect to dashboard where the new job will appear
+            navigate('/crawler');
         },
     });
 

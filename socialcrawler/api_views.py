@@ -3,6 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.db.models import Count, Avg, Q, Sum
 from django.utils import timezone
+from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime, timedelta
 import asyncio
 import logging
@@ -19,6 +20,9 @@ from .serializers import (
     ProfileAnalyticsSerializer
 )
 from .services import CrawlerFactory
+from googledorks.error_handling import (
+    APIErrorResponse, CrawlerException, ERROR_MESSAGES
+)
 
 logger = logging.getLogger(__name__)
 
@@ -143,43 +147,73 @@ class CrawlJobViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def restart(self, request, pk=None):
         """Restart a failed or cancelled crawl job"""
-        crawl_job = self.get_object()
+        try:
+            crawl_job = self.get_object()
+            
+            if crawl_job.status not in [CrawlStatus.FAILED, CrawlStatus.CANCELLED]:
+                logger.warning(f"Attempted to restart job {pk} with status {crawl_job.status}")
+                return APIErrorResponse.bad_request(
+                    message='Can only restart failed or cancelled jobs',
+                    details={'current_status': crawl_job.status}
+                )
+            
+            # Reset job
+            crawl_job.status = CrawlStatus.PENDING
+            crawl_job.progress = 0
+            crawl_job.error_message = ''
+            crawl_job.profiles_found = 0
+            crawl_job.posts_found = 0
+            crawl_job.save()
+            
+            logger.info(f"Restarting crawl job {pk} by user {request.user.username}")
+            
+            # Start crawling
+            self._start_crawl(crawl_job)
+            
+            return Response(CrawlJobSerializer(crawl_job).data)
         
-        if crawl_job.status not in [CrawlStatus.FAILED, CrawlStatus.CANCELLED]:
-            return Response(
-                {'error': 'Can only restart failed or cancelled jobs'},
-                status=status.HTTP_400_BAD_REQUEST
+        except ObjectDoesNotExist:
+            logger.warning(f"Attempted to restart non-existent job {pk}")
+            return APIErrorResponse.not_found(ERROR_MESSAGES['JOB_NOT_FOUND'])
+        
+        except Exception as e:
+            logger.error(f"Error restarting job {pk}: {str(e)}", exc_info=True)
+            return APIErrorResponse.server_error(
+                message=ERROR_MESSAGES['CRAWLER_ERROR'],
+                details=str(e) if request.user.is_staff else None
             )
-        
-        # Reset job
-        crawl_job.status = CrawlStatus.PENDING
-        crawl_job.progress = 0
-        crawl_job.error_message = ''
-        crawl_job.profiles_found = 0
-        crawl_job.posts_found = 0
-        crawl_job.save()
-        
-        # Start crawling
-        self._start_crawl(crawl_job)
-        
-        return Response(CrawlJobSerializer(crawl_job).data)
     
     @action(detail=True, methods=['post'])
     def cancel(self, request, pk=None):
         """Cancel a running crawl job"""
-        crawl_job = self.get_object()
+        try:
+            crawl_job = self.get_object()
+            
+            if crawl_job.status != CrawlStatus.IN_PROGRESS:
+                logger.warning(f"Attempted to cancel job {pk} with status {crawl_job.status}")
+                return APIErrorResponse.bad_request(
+                    message='Can only cancel jobs in progress',
+                    details={'current_status': crawl_job.status}
+                )
+            
+            crawl_job.status = CrawlStatus.CANCELLED
+            crawl_job.completed_at = timezone.now()
+            crawl_job.save()
+            
+            logger.info(f"Cancelled crawl job {pk} by user {request.user.username}")
+            
+            return Response(CrawlJobSerializer(crawl_job).data)
         
-        if crawl_job.status != CrawlStatus.IN_PROGRESS:
-            return Response(
-                {'error': 'Can only cancel jobs in progress'},
-                status=status.HTTP_400_BAD_REQUEST
+        except ObjectDoesNotExist:
+            logger.warning(f"Attempted to cancel non-existent job {pk}")
+            return APIErrorResponse.not_found(ERROR_MESSAGES['JOB_NOT_FOUND'])
+        
+        except Exception as e:
+            logger.error(f"Error cancelling job {pk}: {str(e)}", exc_info=True)
+            return APIErrorResponse.server_error(
+                message=ERROR_MESSAGES['CRAWLER_ERROR'],
+                details=str(e) if request.user.is_staff else None
             )
-        
-        crawl_job.status = CrawlStatus.CANCELLED
-        crawl_job.completed_at = timezone.now()
-        crawl_job.save()
-        
-        return Response(CrawlJobSerializer(crawl_job).data)
     
     @action(detail=False, methods=['get'])
     def supported_platforms(self, request):

@@ -5,6 +5,9 @@ from .models_entity import (
     EntityType, Entity, EntityAttribute, EntitySearchTemplate,
     EntitySearchSession, EntitySearchResult, EntityRelationship, EntityNote
 )
+from .models_automation import (
+    AutomatedDork, Alert, AlertHistory, EmailTemplate
+)
 
 
 @admin.register(DorkCategory)
@@ -241,3 +244,97 @@ class EntityAttributeAdmin(admin.ModelAdmin):
     def value_truncated(self, obj):
         return obj.value[:50] + '...' if len(obj.value) > 50 else obj.value
     value_truncated.short_description = 'Value'
+
+
+# Automation Admin Classes
+
+@admin.register(AutomatedDork)
+class AutomatedDorkAdmin(admin.ModelAdmin):
+    list_display = ['dork', 'schedule_type', 'schedule_time', 'is_active', 'last_run', 'next_run', 'run_count']
+    list_filter = ['schedule_type', 'is_active', 'created_at']
+    search_fields = ['dork__title', 'dork__query']
+    readonly_fields = ['last_run', 'next_run', 'run_count', 'created_at', 'updated_at']
+    list_editable = ['is_active']
+    
+    fieldsets = (
+        ('Dork Selection', {
+            'fields': ('dork', 'created_by')
+        }),
+        ('Schedule Configuration', {
+            'fields': ('schedule_type', 'schedule_time', 'is_active')
+        }),
+        ('Email Notifications', {
+            'fields': ('send_email_on_completion', 'email_recipients')
+        }),
+        ('Execution History', {
+            'fields': ('last_run', 'next_run', 'run_count', 'last_result_count'),
+            'classes': ('collapse',)
+        }),
+        ('System', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(Alert)
+class AlertAdmin(admin.ModelAdmin):
+    list_display = ['name', 'dork', 'trigger_type', 'is_active', 'send_email', 'trigger_count', 'last_triggered']
+    list_filter = ['trigger_type', 'is_active', 'send_email', 'created_at']
+    search_fields = ['name', 'dork__title']
+    readonly_fields = ['trigger_count', 'last_triggered', 'created_at', 'updated_at']
+    list_editable = ['is_active']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'dork', 'created_by')
+        }),
+        ('Alert Configuration', {
+            'fields': ('trigger_type', 'condition_data', 'is_active')
+        }),
+        ('Notification Settings', {
+            'fields': ('send_email', 'email_recipients')
+        }),
+        ('Statistics', {
+            'fields': ('trigger_count', 'last_triggered'),
+            'classes': ('collapse',)
+        }),
+        ('System', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+@admin.register(AlertHistory)
+class AlertHistoryAdmin(admin.ModelAdmin):
+    list_display = ['alert', 'triggered_at', 'result_count', 'new_results_count', 'notification_sent']
+    list_filter = ['notification_sent', 'triggered_at']
+    search_fields = ['alert__name', 'result_summary']
+    readonly_fields = ['triggered_at']
+    
+    def has_add_permission(self, request):
+        return False  # History records are created automatically
+
+
+@admin.register(EmailTemplate)
+class EmailTemplateAdmin(admin.ModelAdmin):
+    list_display = ['name', 'template_type', 'subject', 'is_active', 'created_at']
+    list_filter = ['template_type', 'is_active', 'created_at']
+    search_fields = ['name', 'subject', 'html_content']
+    readonly_fields = ['created_at', 'updated_at']
+    list_editable = ['is_active']
+    
+    fieldsets = (
+        ('Template Information', {
+            'fields': ('name', 'template_type', 'is_active')
+        }),
+        ('Email Content', {
+            'fields': ('subject', 'html_content'),
+            'description': 'Use {{variable_name}} for dynamic content'
+        }),
+        ('System', {
+            'fields': ('created_at', 'updated_at'),
+            'classes': ('collapse',)
+        }),
+    )

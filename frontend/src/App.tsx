@@ -20,6 +20,7 @@ import EntitiesList from './components/EntitiesList';
 import EntityDetail from './components/EntityDetail';
 import NewEntity from './components/NewEntity';
 import EditEntity from './components/EditEntity';
+import BreachChecker from './components/BreachChecker/BreachChecker';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -173,6 +174,9 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+
+              {/* Breach Checker - Public access for demo */}
+              <Route path="/breach-checker" element={<BreachChecker />} />
 
               {/* Redirect root to dashboard */}
               <Route path="/" element={<Navigate to="/dashboard" replace />} />

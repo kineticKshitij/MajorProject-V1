@@ -3,6 +3,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django.db.models import Q, Count
+from django.core.exceptions import ObjectDoesNotExist
+import logging
 
 from .models import (
     GoogleDork, DorkCategory, SearchResult, SearchSession,
@@ -18,6 +20,12 @@ from .serializers import (
     EntitySearchSessionSerializer, EntitySearchResultSerializer,
     EntityRelationshipSerializer, EntityNoteSerializer
 )
+from .error_handling import (
+    APIErrorResponse, safe_api_call, DorkExecutionException,
+    ERROR_MESSAGES
+)
+
+logger = logging.getLogger(__name__)
 
 
 # ==============================================================================
@@ -100,21 +108,35 @@ class GoogleDorkViewSet(viewsets.ModelViewSet):
     @action(detail=True, methods=['post'])
     def execute(self, request, pk=None):
         """Execute a dork query"""
-        dork = self.get_object()
+        try:
+            dork = self.get_object()
+            
+            # Increment execution count
+            dork.execution_count = (dork.execution_count or 0) + 1
+            dork.save()
+            
+            # Build search URL
+            search_url = f"https://www.google.com/search?q={dork.query}"
+            
+            logger.info(f"Dork executed: {dork.title} (ID: {dork.id}) by user {request.user.username}")
+            
+            return Response({
+                'success': True,
+                'dork': GoogleDorkSerializer(dork, context={'request': request}).data,
+                'search_url': search_url,
+                'message': f'Dork "{dork.title}" executed successfully'
+            })
         
-        # Increment execution count
-        dork.execution_count = (dork.execution_count or 0) + 1
-        dork.save()
+        except ObjectDoesNotExist:
+            logger.warning(f"Attempted to execute non-existent dork with ID: {pk}")
+            return APIErrorResponse.not_found(ERROR_MESSAGES['DORK_NOT_FOUND'])
         
-        # Build search URL
-        search_url = f"https://www.google.com/search?q={dork.query}"
-        
-        return Response({
-            'success': True,
-            'dork': GoogleDorkSerializer(dork, context={'request': request}).data,
-            'search_url': search_url,
-            'message': f'Dork "{dork.title}" executed successfully'
-        })
+        except Exception as e:
+            logger.error(f"Error executing dork {pk}: {str(e)}", exc_info=True)
+            return APIErrorResponse.server_error(
+                message=ERROR_MESSAGES['EXECUTION_FAILED'],
+                details=str(e) if request.user.is_staff else None
+            )
     
     @action(detail=True, methods=['post'])
     def bookmark(self, request, pk=None):
@@ -488,3 +510,141 @@ class EntityNoteViewSet(viewsets.ModelViewSet):
         return EntityNote.objects.filter(
             entity__created_by=self.request.user
         ).select_related('entity', 'created_by')
+
+
+# ==============================================================================
+# DATA BREACH CHECKER API
+# ==============================================================================
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from .integrations.breach_checker import HaveIBeenPwnedClient
+from .error_handling import BreachCheckerException
+from django.conf import settings
+import re
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])  # Allow public access for demo
+def check_email_breach(request):
+    """
+    Check if an email has been compromised in data breaches.
+    
+    POST /api/check-breach/
+    Body: {"email": "test@example.com"}
+    
+    Returns:
+        - status: 'found', 'safe', or 'error'
+        - breach_count: Number of breaches found
+        - breaches: List of breach details
+        - message: Human-readable message
+    """
+    try:
+        email = request.data.get('email')
+        
+        if not email:
+            logger.warning("Breach check attempted without email")
+            return APIErrorResponse.bad_request(
+                message='Email address is required',
+                details={'field': 'email', 'error': 'This field is required'}
+            )
+        
+        # Validate email format
+        email_regex = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        if not re.match(email_regex, email):
+            logger.warning(f"Invalid email format: {email}")
+            return APIErrorResponse.bad_request(
+                message='Invalid email address format',
+                details={'field': 'email', 'error': 'Please provide a valid email address'}
+            )
+        
+        # Get API keys and configuration from settings
+        api_key = getattr(settings, 'HIBP_API_KEY', None)
+        rapidapi_key = getattr(settings, 'RAPIDAPI_KEY', None)
+        use_real_api = getattr(settings, 'USE_REAL_BREACH_API', False)
+        
+        # Check breaches using configured API
+        try:
+            client = HaveIBeenPwnedClient(
+                api_key=api_key,
+                demo_mode=not use_real_api,
+                use_breach_directory=use_real_api,
+                rapidapi_key=rapidapi_key
+            )
+            result = client.check_email_breaches(email)
+            
+            logger.info(f"Breach check completed for email: {email[:3]}***")
+            
+            # Return the result
+            return Response(result)
+        
+        except Exception as api_error:
+            logger.error(f"Breach check API error: {str(api_error)}", exc_info=True)
+            return APIErrorResponse.server_error(
+                message='Failed to check email breaches',
+                details=str(api_error) if settings.DEBUG else None
+            )
+    
+    except Exception as e:
+        logger.error(f"Unexpected error in breach check: {str(e)}", exc_info=True)
+        return APIErrorResponse.server_error(
+            message='An unexpected error occurred',
+            details=str(e) if settings.DEBUG else None
+        )
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def check_password_breach(request):
+    """
+    Check if a password has been seen in data breaches.
+    Uses k-anonymity method - only first 5 chars of hash are sent.
+    
+    POST /api/check-password/
+    Body: {"password": "mypassword123"}
+    
+    Returns:
+        - status: 'found', 'safe', or 'error'
+        - times_seen: Number of times password seen in breaches
+        - message: Human-readable message
+        - recommendation: Security recommendation
+    """
+    try:
+        password = request.data.get('password')
+        
+        if not password:
+            logger.warning("Password check attempted without password")
+            return APIErrorResponse.bad_request(
+                message='Password is required',
+                details={'field': 'password', 'error': 'This field is required'}
+            )
+        
+        # Validate password length
+        if len(password) < 1:
+            return APIErrorResponse.bad_request(
+                message='Password cannot be empty',
+                details={'field': 'password', 'error': 'Password must be at least 1 character'}
+            )
+        
+        # Check password using k-anonymity method (secure)
+        try:
+            client = HaveIBeenPwnedClient()
+            result = client.check_password_hash(password)
+            
+            logger.info("Password breach check completed (k-anonymity)")
+            
+            return Response(result)
+        
+        except Exception as api_error:
+            logger.error(f"Password check API error: {str(api_error)}", exc_info=True)
+            return APIErrorResponse.server_error(
+                message='Failed to check password',
+                details=str(api_error) if settings.DEBUG else None
+            )
+    
+    except Exception as e:
+        logger.error(f"Unexpected error in password check: {str(e)}", exc_info=True)
+        return APIErrorResponse.server_error(
+            message='An unexpected error occurred',
+            details=str(e) if settings.DEBUG else None
+        )

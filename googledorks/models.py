@@ -9,6 +9,11 @@ from .models_entity import (
     EntitySearchSession, EntitySearchResult, EntityRelationship, EntityNote
 )
 
+# Import automation models
+from .models_automation import (
+    AutomatedDork, Alert, AlertHistory, EmailTemplate
+)
+
 
 class DorkCategory(models.Model):
     """Categories for organizing Google dorks"""

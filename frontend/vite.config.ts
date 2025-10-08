@@ -10,4 +10,9 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    allowedHosts: ['uninfected-heliocentrically-bruno.ngrok-free.dev'], // 👈 your ngrok domain
+    host: true, // 👈 allows external connections
+    port: 5173, // optional, ensures it matches your dev server
+  },
 })
