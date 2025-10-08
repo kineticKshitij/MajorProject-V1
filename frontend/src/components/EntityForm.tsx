@@ -69,7 +69,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, isEdit = false }) => {
         if (entity && isEdit) {
             setFormData({
                 name: entity.name || '',
-                entity_type_id: (entity.entity_type as any).id || entity.entity_type,
+                entity_type_id: entity.entity_type_data?.id ?? entity.entity_type,
                 aliases: Array.isArray(entity.aliases) ? entity.aliases.join(', ') : '',
                 description: entity.description || '',
                 industry: entity.industry || '',
@@ -98,7 +98,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, isEdit = false }) => {
             queryClient.invalidateQueries({ queryKey: ['entities'] });
             navigate('/entities');
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             console.error('Create error:', error);
             alert(`Error creating entity: ${error.message || 'Unknown error'}`);
         },
@@ -106,7 +106,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, isEdit = false }) => {
 
     // Update entity mutation
     const updateMutation = useMutation({
-        mutationFn: ({ id, data }: { id: number; data: any }) =>
+        mutationFn: ({ id, data }: { id: number; data: Partial<Entity> }) =>
             entitiesService.updateEntity(id, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['entities'] });

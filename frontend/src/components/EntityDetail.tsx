@@ -22,46 +22,28 @@ const EntityDetail: React.FC = () => {
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<TabType>('overview');
 
-    // Validate ID
-    if (!id || id === 'undefined' || id === 'NaN') {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="bg-white p-8 rounded-lg shadow-md max-w-md text-center">
-                    <div className="text-red-600 text-5xl mb-4">⚠️</div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Invalid Entity ID</h2>
-                    <p className="text-gray-600 mb-6">
-                        The entity ID is missing or invalid. Please navigate to an entity from the entities list.
-                    </p>
-                    <Link
-                        to="/entities"
-                        className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
-                    >
-                        ← Back to Entities List
-                    </Link>
-                </div>
-            </div>
-        );
-    }
+    // Validate ID early but don't return yet - all hooks must be called first
+    const isValidId = !!(id && id !== 'undefined' && id !== 'NaN');
 
     // Fetch entity details - Use ID as string (UUID)
-    const { data: entity, isLoading, error } = useQuery({
+    const { data: entity, isLoading, error } = useQuery<Entity>({
         queryKey: ['entity', id],
-        queryFn: () => entitiesService.getEntity(id!), // Use non-null assertion since we validated above
-        enabled: !!id,
+        queryFn: () => entitiesService.getEntity(id!),
+        enabled: isValidId,
     });
 
     // Fetch attributes
-    const { data: attributes = [] } = useQuery({
+    const { data: attributes = [] } = useQuery<EntityAttribute[]>({
         queryKey: ['entity-attributes', id],
         queryFn: () => entitiesService.getEntityAttributes(id!),
-        enabled: !!id && activeTab === 'attributes',
+        enabled: isValidId && activeTab === 'attributes',
     });
 
     // Fetch relationships
-    const { data: relationshipsData } = useQuery({
+    const { data: relationshipsData } = useQuery<{ outgoing: EntityRelationship[]; incoming: EntityRelationship[] }>({
         queryKey: ['entity-relationships', id],
         queryFn: () => entitiesService.getEntityRelationships(id!),
-        enabled: !!id && activeTab === 'relationships',
+        enabled: isValidId && activeTab === 'relationships',
     });
 
     const relationships = [
@@ -70,10 +52,10 @@ const EntityDetail: React.FC = () => {
     ];
 
     // Fetch notes
-    const { data: notes = [] } = useQuery({
+    const { data: notes = [] } = useQuery<EntityNote[]>({
         queryKey: ['entity-notes', id],
         queryFn: () => entitiesService.getEntityNotes(id!),
-        enabled: !!id && activeTab === 'notes',
+        enabled: isValidId && activeTab === 'notes',
     });
 
     // Fetch search results - using search sessions endpoint (for future implementation)
@@ -96,6 +78,27 @@ const EntityDetail: React.FC = () => {
             navigate('/entities');
         },
     });
+
+    // NOW check for invalid ID after all hooks are called
+    if (!isValidId) {
+        return (
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="bg-white p-8 rounded-lg shadow-md max-w-md text-center">
+                    <div className="text-red-600 text-5xl mb-4">⚠️</div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Invalid Entity ID</h2>
+                    <p className="text-gray-600 mb-6">
+                        The entity ID is missing or invalid. Please navigate to an entity from the entities list.
+                    </p>
+                    <Link
+                        to="/entities"
+                        className="inline-block bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 transition"
+                    >
+                        ← Back to Entities List
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     const handleDelete = () => {
         if (window.confirm(`Are you sure you want to delete "${entity?.name}"?`)) {
