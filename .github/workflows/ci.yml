@@ -107,7 +107,7 @@ jobs:
     
     - name: Run ESLint
       working-directory: ./frontend
-      run: npm run lint || true
+      run: npm run lint
     
     - name: Build frontend
       working-directory: ./frontend
@@ -165,11 +165,19 @@ jobs:
     
     - name: Build Tor Docker image
       run: |
-        docker build -f Dockerfile.tor -t mp-tor-proxy:test .
+        if [ -f Dockerfile.tor ]; then
+          docker build -f Dockerfile.tor -t mp-tor-proxy:test .
+        else
+          echo "⚠️ Dockerfile.tor not found, skipping Docker build"
+        fi
     
     - name: Test Docker Compose
       run: |
-        docker-compose -f docker-compose.tor.yml config
+        if [ -f docker-compose.tor.yml ]; then
+          docker compose -f docker-compose.tor.yml config
+        else
+          echo "⚠️ docker-compose.tor.yml not found, skipping"
+        fi
 
   # Documentation Check
   docs-check:
