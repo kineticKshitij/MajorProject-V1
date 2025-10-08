@@ -32,10 +32,11 @@ const CreateDork = () => {
         onSuccess: (data) => {
             navigate(`/dorks/${data.id}`);
         },
-        onError: (err: any) => {
+        onError: (err) => {
+            const error = err as { response?: { data?: { detail?: string; message?: string } } };
             setError(
-                err.response?.data?.detail ||
-                err.response?.data?.message ||
+                error.response?.data?.detail ||
+                error.response?.data?.message ||
                 'Failed to create dork'
             );
         },
@@ -173,7 +174,7 @@ const CreateDork = () => {
                                 required
                                 className="input-field"
                                 value={formData.risk_level}
-                                onChange={(e) => setFormData({ ...formData, risk_level: e.target.value as any })}
+                                onChange={(e) => setFormData({ ...formData, risk_level: e.target.value as 'low' | 'medium' | 'high' | 'critical' })}
                             >
                                 <option value="low">Low</option>
                                 <option value="medium">Medium</option>
@@ -191,7 +192,7 @@ const CreateDork = () => {
                                 required
                                 className="input-field"
                                 value={formData.difficulty_level}
-                                onChange={(e) => setFormData({ ...formData, difficulty_level: e.target.value as any })}
+                                onChange={(e) => setFormData({ ...formData, difficulty_level: e.target.value as 'beginner' | 'intermediate' | 'advanced' })}
                             >
                                 <option value="beginner">Beginner</option>
                                 <option value="intermediate">Intermediate</option>

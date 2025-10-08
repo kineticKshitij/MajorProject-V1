@@ -35,7 +35,7 @@ export const clearTokens = (): void => {
 
 export const isTokenExpired = (token: string): boolean => {
     try {
-        const decoded: any = jwtDecode(token);
+        const decoded = jwtDecode<{ exp?: number }>(token);
         if (!decoded.exp) return true;
         return decoded.exp * 1000 < Date.now();
     } catch {
@@ -60,11 +60,11 @@ api.interceptors.request.use(
 // Response interceptor to handle token refresh
 let isRefreshing = false;
 let failedQueue: Array<{
-    resolve: (value?: any) => void;
-    reject: (reason?: any) => void;
+    resolve: (value?: unknown) => void;
+    reject: (reason?: unknown) => void;
 }> = [];
 
-const processQueue = (error: any = null) => {
+const processQueue = (error: Error | null = null) => {
     failedQueue.forEach((prom) => {
         if (error) {
             prom.reject(error);
@@ -125,7 +125,7 @@ api.interceptors.response.use(
 
                 return api(originalRequest);
             } catch (refreshError) {
-                processQueue(refreshError);
+                processQueue(refreshError instanceof Error ? refreshError : new Error('Token refresh failed'));
                 isRefreshing = false;
                 clearTokens();
                 window.location.href = '/login';

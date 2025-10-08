@@ -37,7 +37,7 @@ const InlineNoteForm: React.FC<InlineNoteFormProps> = ({
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const createMutation = useMutation({
-        mutationFn: (data: any) => entitiesService.createNote(data),
+        mutationFn: (data: Record<string, unknown>) => entitiesService.createNote(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['entity-notes', entityId] });
             queryClient.invalidateQueries({ queryKey: ['entity', entityId] });
@@ -47,7 +47,7 @@ const InlineNoteForm: React.FC<InlineNoteFormProps> = ({
     });
 
     const updateMutation = useMutation({
-        mutationFn: (data: any) => entitiesService.updateNote(noteId!, data),
+        mutationFn: (data: Record<string, unknown>) => entitiesService.updateNote(noteId!, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['entity-notes', entityId] });
             queryClient.invalidateQueries({ queryKey: ['entity', entityId] });

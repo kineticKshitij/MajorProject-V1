@@ -281,8 +281,14 @@ const EntityDetail: React.FC = () => {
 
 // Overview Tab Component
 const OverviewTab: React.FC<{ entity: Entity }> = ({ entity }) => {
-    const InfoItem: React.FC<{ label: string; value: any; icon?: string }> = ({ label, value, icon }) => {
+    const InfoItem: React.FC<{ label: string; value: string | string[] | number | Record<string, string> | undefined; icon?: string }> = ({ label, value, icon }) => {
         if (!value || (Array.isArray(value) && value.length === 0)) return null;
+
+        const displayValue = Array.isArray(value) 
+            ? value.join(', ') 
+            : typeof value === 'object' 
+                ? JSON.stringify(value)
+                : String(value);
 
         return (
             <div className="py-3 border-b border-gray-100 last:border-0">
@@ -291,7 +297,7 @@ const OverviewTab: React.FC<{ entity: Entity }> = ({ entity }) => {
                     {label}
                 </dt>
                 <dd className="text-sm text-gray-900">
-                    {Array.isArray(value) ? value.join(', ') : value}
+                    {displayValue}
                 </dd>
             </div>
         );

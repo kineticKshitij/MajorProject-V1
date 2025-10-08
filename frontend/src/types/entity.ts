@@ -224,7 +224,7 @@ export interface EntitySearchResult {
     is_interesting: boolean;
     is_verified: boolean;
     contains_sensitive_info: boolean;
-    extracted_info: Record<string, any>;
+    extracted_info: Record<string, unknown>;
     tags: string[];
     notes: string;
     found_at: string;

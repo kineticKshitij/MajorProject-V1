@@ -260,7 +260,7 @@ export interface ChatMessage {
     message: string;
     timestamp: string;
     tokens_used?: number;
-    entity_context?: any;
+    entity_context?: Record<string, unknown>;
 }
 
 export interface SendMessageData {
@@ -287,5 +287,5 @@ export interface PaginatedResponse<T> {
 export interface ApiError {
     detail?: string;
     message?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }

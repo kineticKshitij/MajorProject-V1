@@ -53,7 +53,7 @@ export interface CrawlJob {
     profiles_found: number;
     posts_found: number;
     error_message?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     created_at: string;
     started_at?: string;
     completed_at?: string;
@@ -103,7 +103,7 @@ export interface SocialProfile {
     location?: string;
     website?: string;
     joined_date?: string;
-    raw_data?: Record<string, any>;
+    raw_data?: Record<string, unknown>;
     crawled_at: string;
     last_updated: string;
     posts?: SocialPost[];
@@ -141,7 +141,7 @@ export interface SocialPost {
     mentions?: string[];
     sentiment?: Sentiment;
     topics?: string[];
-    raw_data?: Record<string, any>;
+    raw_data?: Record<string, unknown>;
     crawled_at: string;
 }
 

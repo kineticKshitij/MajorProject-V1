@@ -51,7 +51,7 @@ const InlineRelationshipForm: React.FC<InlineRelationshipFormProps> = ({
     });
 
     const createMutation = useMutation({
-        mutationFn: (data: any) => entitiesService.createRelationship(data),
+        mutationFn: (data: Record<string, unknown>) => entitiesService.createRelationship(data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['entity-relationships', entityId] });
             queryClient.invalidateQueries({ queryKey: ['entity', entityId] });
@@ -61,7 +61,7 @@ const InlineRelationshipForm: React.FC<InlineRelationshipFormProps> = ({
     });
 
     const updateMutation = useMutation({
-        mutationFn: (data: any) => entitiesService.updateRelationship(relationshipId!, data),
+        mutationFn: (data: Record<string, unknown>) => entitiesService.updateRelationship(relationshipId!, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['entity-relationships', entityId] });
             queryClient.invalidateQueries({ queryKey: ['entity', entityId] });

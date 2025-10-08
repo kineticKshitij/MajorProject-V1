@@ -25,10 +25,11 @@ const ForgotPassword = () => {
             setSuccess('OTP sent successfully! Please check your email.');
             setStep('otp');
             startResendTimer();
-        } catch (err: any) {
+        } catch (err) {
+            const error = err as { response?: { data?: { error?: string; email?: string[] } } };
             setError(
-                err.response?.data?.error ||
-                err.response?.data?.email?.[0] ||
+                error.response?.data?.error ||
+                error.response?.data?.email?.[0] ||
                 'Failed to send OTP. Please try again.'
             );
         } finally {
@@ -45,10 +46,11 @@ const ForgotPassword = () => {
             await authService.verifyOTP(email, otpCode);
             setSuccess('OTP verified! Please enter your new password.');
             setStep('password');
-        } catch (err: any) {
+        } catch (err) {
+            const error = err as { response?: { data?: { error?: string; non_field_errors?: string[] } } };
             setError(
-                err.response?.data?.error ||
-                err.response?.data?.non_field_errors?.[0] ||
+                error.response?.data?.error ||
+                error.response?.data?.non_field_errors?.[0] ||
                 'Invalid OTP. Please try again.'
             );
         } finally {
@@ -79,11 +81,12 @@ const ForgotPassword = () => {
             setTimeout(() => {
                 window.location.href = '/login';
             }, 2000);
-        } catch (err: any) {
+        } catch (err) {
+            const error = err as { response?: { data?: { error?: string; new_password?: string[]; non_field_errors?: string[] } } };
             setError(
-                err.response?.data?.error ||
-                err.response?.data?.new_password?.[0] ||
-                err.response?.data?.non_field_errors?.[0] ||
+                error.response?.data?.error ||
+                error.response?.data?.new_password?.[0] ||
+                error.response?.data?.non_field_errors?.[0] ||
                 'Failed to reset password. Please try again.'
             );
         } finally {
@@ -102,9 +105,10 @@ const ForgotPassword = () => {
             await authService.resendOTP(email);
             setSuccess('New OTP sent successfully!');
             startResendTimer();
-        } catch (err: any) {
+        } catch (err) {
+            const error = err as { response?: { data?: { error?: string } } };
             setError(
-                err.response?.data?.error ||
+                error.response?.data?.error ||
                 'Failed to resend OTP. Please try again.'
             );
         } finally {

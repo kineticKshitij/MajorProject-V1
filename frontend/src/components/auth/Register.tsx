@@ -37,15 +37,17 @@ const Register = () => {
         try {
             await register(formData);
             navigate('/dashboard', { replace: true });
-        } catch (err: any) {
-            const errorData = err.response?.data || {};
+        } catch (err) {
+            const error = err as { response?: { data?: Record<string, string | string[]> } };
+            const errorData = error.response?.data || {};
             const errorMessages: Record<string, string> = {};
 
             Object.keys(errorData).forEach((key) => {
-                if (Array.isArray(errorData[key])) {
-                    errorMessages[key] = errorData[key][0];
-                } else if (typeof errorData[key] === 'string') {
-                    errorMessages[key] = errorData[key];
+                const value = errorData[key];
+                if (Array.isArray(value)) {
+                    errorMessages[key] = value[0];
+                } else if (typeof value === 'string') {
+                    errorMessages[key] = value;
                 }
             });
 

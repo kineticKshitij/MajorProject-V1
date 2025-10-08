@@ -21,12 +21,13 @@ const Login = () => {
 
         try {
             await login(formData);
-            const from = (location.state as any)?.from?.pathname || '/dashboard';
+            const from = (location.state as { from?: { pathname?: string } })?.from?.pathname || '/dashboard';
             navigate(from, { replace: true });
-        } catch (err: any) {
+        } catch (err) {
+            const error = err as { response?: { data?: { detail?: string; message?: string } } };
             setError(
-                err.response?.data?.detail ||
-                err.response?.data?.message ||
+                error.response?.data?.detail ||
+                error.response?.data?.message ||
                 'Invalid credentials'
             );
         } finally {

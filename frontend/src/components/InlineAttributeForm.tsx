@@ -39,7 +39,7 @@ const InlineAttributeForm: React.FC<InlineAttributeFormProps> = ({
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const createMutation = useMutation({
-        mutationFn: (data: any) => entitiesService.createEntityAttribute(entityId, data),
+        mutationFn: (data: Record<string, unknown>) => entitiesService.createEntityAttribute(entityId, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['entity-attributes', entityId] });
             queryClient.invalidateQueries({ queryKey: ['entity', entityId] });
@@ -49,7 +49,7 @@ const InlineAttributeForm: React.FC<InlineAttributeFormProps> = ({
     });
 
     const updateMutation = useMutation({
-        mutationFn: (data: any) => entitiesService.updateAttribute(attributeId!, data),
+        mutationFn: (data: Record<string, unknown>) => entitiesService.updateAttribute(attributeId!, data),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['entity-attributes', entityId] });
             queryClient.invalidateQueries({ queryKey: ['entity', entityId] });

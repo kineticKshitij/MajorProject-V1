@@ -112,7 +112,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, isEdit = false }) => {
             queryClient.invalidateQueries({ queryKey: ['entities'] });
             navigate('/entities');
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             console.error('Update error:', error);
             alert(`Error updating entity: ${error.message || 'Unknown error'}`);
         },
@@ -152,7 +152,7 @@ const EntityForm: React.FC<EntityFormProps> = ({ entity, isEdit = false }) => {
             domains: formData.domains.split(',').map(d => d.trim()).filter(Boolean),
             tags: formData.tags.split(',').map(t => t.trim()).filter(Boolean),
             social_media: Object.fromEntries(
-                Object.entries(formData.social_media).filter(([_, v]) => v)
+                Object.entries(formData.social_media).filter(([, v]) => v)
             ),
         };
 

@@ -65,10 +65,15 @@ const NewEntity: React.FC = () => {
             queryClient.invalidateQueries({ queryKey: ['entities'] });
             navigate(`/entities/${data.id}`);
         },
-        onError: (error: any) => {
+        onError: (error: Error & { response?: { data?: Record<string, string | string[]> } }) => {
             console.error('Failed to create entity:', error);
             if (error.response?.data) {
-                setErrors(error.response.data);
+                // Convert array errors to string
+                const normalizedErrors = Object.entries(error.response.data).reduce((acc, [key, value]) => {
+                    acc[key] = Array.isArray(value) ? value.join(', ') : value;
+                    return acc;
+                }, {} as Record<string, string>);
+                setErrors(normalizedErrors);
             }
         },
     });
@@ -165,7 +170,7 @@ const NewEntity: React.FC = () => {
 
         // Clean social media
         const cleanedSocialMedia = Object.entries(formData.social_media)
-            .filter(([_, value]) => value && value.trim())
+            .filter(([, value]) => value && value.trim())
             .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
 
         if (Object.keys(cleanedSocialMedia).length > 0) {

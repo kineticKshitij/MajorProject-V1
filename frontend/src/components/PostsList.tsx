@@ -151,7 +151,7 @@ const PostsList = () => {
                                 {/* Post Header */}
                                 <div className="flex items-start justify-between mb-4">
                                     <div className="flex items-center space-x-2">
-                                        <span className="text-2xl">{getPlatformIcon(post.profile as any)}</span>
+                                        <span className="text-2xl">{getPlatformIcon(post.profile as Platform)}</span>
                                         <div>
                                             <p className="text-sm font-medium text-gray-900">
                                                 Post ID: <code className="text-xs font-mono">{post.post_id}</code>

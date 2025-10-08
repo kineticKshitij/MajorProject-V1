@@ -23,12 +23,12 @@ interface RelationshipGraphProps {
 }
 
 // Custom node component for entities
-const EntityNode = ({ data }: { data: any }) => {
+const EntityNode = ({ data }: { data: Record<string, unknown> }) => {
     const navigate = useNavigate();
 
     const handleClick = () => {
         if (data.entityId && !data.isCurrent) {
-            navigate(`/entities/${data.entityId}`);
+            navigate(`/entities/${String(data.entityId)}`);
         }
     };
 
@@ -42,17 +42,17 @@ const EntityNode = ({ data }: { data: any }) => {
             style={{ minWidth: '150px' }}
         >
             <div className="flex items-center gap-2">
-                <div className="text-xl">{data.icon || '🔷'}</div>
+                <div className="text-xl">{String(data.icon || '🔷')}</div>
                 <div className="flex-1">
-                    <div className="font-semibold text-sm">{data.label}</div>
-                    {data.entityType && (
+                    <div className="font-semibold text-sm">{String(data.label)}</div>
+                    {typeof data.entityType === 'string' && (
                         <div className={`text-xs ${data.isCurrent ? 'text-blue-100' : 'text-gray-500'}`}>
                             {data.entityType}
                         </div>
                     )}
                 </div>
             </div>
-            {data.relationshipCount !== undefined && (
+            {typeof data.relationshipCount === 'number' && (
                 <div className={`text-xs mt-1 ${data.isCurrent ? 'text-blue-100' : 'text-gray-500'}`}>
                     {data.relationshipCount} connection{data.relationshipCount !== 1 ? 's' : ''}
                 </div>
