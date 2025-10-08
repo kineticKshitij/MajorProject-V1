@@ -3,11 +3,9 @@ import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { entitiesService } from '../services/entitiesService';
 import TemplateIntegration from './TemplateIntegration';
-import RelationshipGraph from './RelationshipGraph';
 import EnhancedRelationshipGraph from './EnhancedRelationshipGraph';
 import InlineAttributeForm from './InlineAttributeForm';
 import InlineRelationshipForm from './InlineRelationshipForm';
-import InlineNoteForm from './InlineNoteForm';
 import type {
     Entity,
     EntityAttribute,

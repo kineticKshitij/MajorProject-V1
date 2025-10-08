@@ -54,8 +54,9 @@ const BreachChecker: React.FC = () => {
         try {
             const response = await axios.post('http://localhost:8000/api/dorks/check-breach/', { email });
             setResult(response.data);
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'An error occurred. Please try again.');
+        } catch (err) {
+            const error = err as { response?: { data?: { message?: string } } };
+            setError(error.response?.data?.message || 'An error occurred. Please try again.');
         } finally {
             setLoading(false);
         }

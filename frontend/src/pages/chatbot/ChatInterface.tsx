@@ -74,7 +74,7 @@ const ChatInterface = () => {
         } else if (!currentSessionId) {
             startSessionMutation.mutate();
         }
-    }, [searchParams]);
+    }, [searchParams, currentSessionId, startSessionMutation]);
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {

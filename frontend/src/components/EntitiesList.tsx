@@ -1,11 +1,10 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { entitiesService } from '../services/entitiesService';
 import type { Entity } from '../types';
 
 const EntitiesList = () => {
-    const navigate = useNavigate();
     const [filters, setFilters] = useState({
         search: '',
         entity_type: undefined as number | undefined,
@@ -23,7 +22,7 @@ const EntitiesList = () => {
     // Handle both array and paginated response
     const entityTypes = Array.isArray(entityTypesResponse)
         ? entityTypesResponse
-        : (entityTypesResponse as any)?.results || [];
+        : ((entityTypesResponse as unknown) as { results?: Array<{ id: number; name: string; display_name?: string }> })?.results || [];
 
     // Fetch entities
     const { data: entitiesData, isLoading, refetch } = useQuery({
@@ -120,7 +119,7 @@ const EntitiesList = () => {
                         </div>
                     </div>
 
-                    {stats.status_distribution && Array.isArray(stats.status_distribution) && stats.status_distribution.map((item: any) => (
+                    {stats.status_distribution && Array.isArray(stats.status_distribution) && stats.status_distribution.map((item: { status: string; count: number }) => (
                         <div key={item.status} className="bg-white rounded-lg shadow p-6">
                             <div className="flex items-center">
                                 <div className={`flex-shrink-0 rounded-md p-3 ${item.status === 'active' ? 'bg-green-500' :
@@ -173,7 +172,7 @@ const EntitiesList = () => {
                                 className="focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
                             >
                                 <option value="">All Types</option>
-                                {entityTypes.map((type: any) => (
+                                {entityTypes.map((type: { id: number; name: string; display_name?: string }) => (
                                     <option key={type.id} value={type.id}>{type.display_name || type.name}</option>
                                 ))}
                             </select>

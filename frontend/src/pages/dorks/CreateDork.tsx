@@ -154,7 +154,7 @@ const CreateDork = () => {
                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                         >
                             <option value="">Select a category</option>
-                            {categories?.map((cat) => (
+                            {categories?.results?.map((cat: { id: number; name: string }) => (
                                 <option key={cat.id} value={cat.id}>
                                     {cat.name}
                                 </option>

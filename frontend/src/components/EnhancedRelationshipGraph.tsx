@@ -25,7 +25,7 @@ interface EnhancedRelationshipGraphProps {
 }
 
 // Enhanced custom node component with tooltips and animations
-const EnhancedEntityNode = ({ data }: { data: any }) => {
+const EnhancedEntityNode = ({ data }: { data: { label: string; entityId?: string; isCurrent?: boolean; entityType?: string; priority?: string; status?: string; icon?: string; relationshipCount?: number } }) => {
     const navigate = useNavigate();
     const [showTooltip, setShowTooltip] = useState(false);
 
@@ -71,7 +71,7 @@ const EnhancedEntityNode = ({ data }: { data: any }) => {
                 <div className="absolute z-50 top-full mt-2 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-xl whitespace-nowrap animate-fadeIn">
                     <div className="font-semibold mb-1">{data.label}</div>
                     {data.entityType && <div className="text-gray-300">Type: {data.entityType}</div>}
-                    {data.relationshipCount > 0 && (
+                    {data.relationshipCount !== undefined && data.relationshipCount > 0 && (
                         <div className="text-gray-300">{data.relationshipCount} relationship{data.relationshipCount !== 1 ? 's' : ''}</div>
                     )}
                     <div className="text-blue-300 mt-1">Click to view →</div>

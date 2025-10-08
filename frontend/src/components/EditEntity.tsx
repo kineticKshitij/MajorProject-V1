@@ -100,10 +100,17 @@ const EditEntity: React.FC = () => {
             queryClient.invalidateQueries({ queryKey: ['entity', id] });
             navigate(`/entities/${data.id}`);
         },
-        onError: (error: any) => {
+        onError: (error: { response?: { data?: Record<string, string | string[]> }; message?: string }) => {
             console.error('Failed to update entity:', error);
             if (error.response?.data) {
-                setErrors(error.response.data);
+                // Convert array values to strings
+                const errorData = error.response.data;
+                const normalizedErrors: Record<string, string> = {};
+                Object.keys(errorData).forEach(key => {
+                    const value = errorData[key];
+                    normalizedErrors[key] = Array.isArray(value) ? value[0] : value;
+                });
+                setErrors(normalizedErrors);
             }
         },
     });
@@ -200,7 +207,7 @@ const EditEntity: React.FC = () => {
 
         // Clean social media
         const cleanedSocialMedia = Object.entries(formData.social_media)
-            .filter(([_, value]) => value && value.trim())
+            .filter(([, value]) => value && value.trim())
             .reduce((acc, [key, value]) => ({ ...acc, [key]: value }), {});
 
         if (Object.keys(cleanedSocialMedia).length > 0) {
