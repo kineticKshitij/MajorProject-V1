@@ -284,9 +284,9 @@ const OverviewTab: React.FC<{ entity: Entity }> = ({ entity }) => {
     const InfoItem: React.FC<{ label: string; value: string | string[] | number | Record<string, string> | undefined; icon?: string }> = ({ label, value, icon }) => {
         if (!value || (Array.isArray(value) && value.length === 0)) return null;
 
-        const displayValue = Array.isArray(value) 
-            ? value.join(', ') 
-            : typeof value === 'object' 
+        const displayValue = Array.isArray(value)
+            ? value.join(', ')
+            : typeof value === 'object'
                 ? JSON.stringify(value)
                 : String(value);
 

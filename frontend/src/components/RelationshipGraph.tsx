@@ -36,8 +36,8 @@ const EntityNode = ({ data }: { data: Record<string, unknown> }) => {
         <div
             onClick={handleClick}
             className={`px-4 py-3 rounded-lg border-2 shadow-lg transition-all ${data.isCurrent
-                    ? 'bg-blue-500 text-white border-blue-600 shadow-blue-200'
-                    : 'bg-white text-gray-900 border-gray-300 hover:border-blue-400 hover:shadow-xl cursor-pointer'
+                ? 'bg-blue-500 text-white border-blue-600 shadow-blue-200'
+                : 'bg-white text-gray-900 border-gray-300 hover:border-blue-400 hover:shadow-xl cursor-pointer'
                 }`}
             style={{ minWidth: '150px' }}
         >
