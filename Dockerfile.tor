@@ -1,0 +1,36 @@
+# Dockerfile for Tor Proxy Service
+# Provides anonymous SOCKS5 proxy for web scraping
+
+FROM alpine:latest
+
+# Install Tor and utilities
+RUN apk update && \
+    apk add --no-cache \
+    tor \
+    curl \
+    tini
+
+# Create Tor directories with proper permissions
+RUN mkdir -p /var/lib/tor /etc/tor && \
+    chown -R tor:tor /var/lib/tor && \
+    chmod 700 /var/lib/tor
+
+# Copy Tor configuration
+COPY torrc /etc/tor/torrc
+RUN chown tor:tor /etc/tor/torrc
+
+# Expose ports
+EXPOSE 9050 9051
+
+# Health check - verify Tor is running and can connect
+HEALTHCHECK --interval=60s --timeout=15s --start-period=20s --retries=3 \
+    CMD curl --fail --socks5-hostname localhost:9050 https://check.torproject.org/ || exit 1
+
+# Use tini for proper signal handling
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# Run as tor user
+USER tor
+
+# Start Tor daemon
+CMD ["tor", "-f", "/etc/tor/torrc"]

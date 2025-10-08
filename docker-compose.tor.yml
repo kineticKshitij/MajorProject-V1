@@ -1,0 +1,127 @@
+# Docker Compose - Tor Integration
+# Anonymous web scraping with Tor network
+
+version: '3.8'
+
+services:
+  # Tor Proxy Service
+  tor-proxy:
+    build:
+      context: .
+      dockerfile: Dockerfile.tor
+    container_name: tor-service
+    hostname: tor-proxy
+    networks:
+      - tor-network
+    ports:
+      - "9050:9050" # SOCKS5 proxy port
+      - "9051:9051" # Control port for circuit management
+    volumes:
+      - tor-data:/var/lib/tor
+      - ./torrc:/etc/tor/torrc:ro
+    restart: unless-stopped
+    environment:
+      - TOR_CIRCUIT_TIMEOUT=60
+    healthcheck:
+      test: [ "CMD", "curl", "--fail", "--socks5-hostname", "localhost:9050", "https://check.torproject.org/" ]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Django Application (optional - if running in Docker)
+  django-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: django-app
+    depends_on:
+      tor-proxy:
+        condition: service_healthy
+    networks:
+      - tor-network
+    environment:
+      # Django settings
+      - DJANGO_SETTINGS_MODULE=InformationExtractor.settings
+      - DEBUG=True
+
+      # Tor configuration
+      - TOR_ENABLED=true
+      - TOR_PROXY_HOST=tor-proxy
+      - TOR_PROXY_PORT=9050
+      - TOR_CONTROL_PORT=9051
+      - TOR_CONTROL_PASSWORD=torcontrol123
+      - TOR_CIRCUIT_TIMEOUT=60
+      - TOR_MAX_RETRIES=3
+
+      # Database
+      - DATABASE_URL=sqlite:///db.sqlite3
+    volumes:
+      - .:/app
+      - django-static:/app/staticfiles
+      - django-media:/app/media
+    ports:
+      - "8000:8000"
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py runserver 0.0.0.0:8000"
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+  # PostgreSQL Database (optional - uncomment if needed)
+  # db:
+  #   image: postgres:15-alpine
+  #   container_name: postgres-db
+  #   networks:
+  #     - tor-network
+  #   environment:
+  #     - POSTGRES_DB=information_extractor
+  #     - POSTGRES_USER=django_user
+  #     - POSTGRES_PASSWORD=secure_password
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   restart: unless-stopped
+
+  # Redis Cache (optional - for Celery tasks)
+  # redis:
+  #   image: redis:7-alpine
+  #   container_name: redis-cache
+  #   networks:
+  #     - tor-network
+  #   ports:
+  #     - "6379:6379"
+  #   volumes:
+  #     - redis-data:/data
+  #   restart: unless-stopped
+
+networks:
+  tor-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.20.0.0/16
+          gateway: 172.20.0.1
+
+volumes:
+  tor-data:
+    driver: local
+  django-static:
+    driver: local
+  django-media:
+    driver: local
+  # postgres-data:
+  #   driver: local
+  # redis-data:
+  #   driver: local

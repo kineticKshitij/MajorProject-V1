@@ -12,9 +12,13 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from Cred/.env
+load_dotenv(os.path.join(BASE_DIR, 'Cred', '.env'))
 
 
 # Quick-start development settings - unsuitable for production
@@ -62,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'googledorks.error_handling.RobustErrorHandlingMiddleware',  # Custom error handling
 ]
 
 ROOT_URLCONF = 'InformationExtractor.urls'
@@ -156,8 +161,12 @@ LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 
 # Google Gemini API Configuration
-GEMINI_API_KEY = 'AIzaSyA_pM8kSybEKlLn2EWdHrhydUf1bx2nFHc'
-GEMINI_MODEL = 'gemini-2.0-flash-exp'
+GEMINI_API_KEY = os.environ.get('GEMINI_API_KEY', '')
+GEMINI_MODEL = os.environ.get('GEMINI_MODEL', 'gemini-2.0-flash-exp')
+
+# BreachDirectory API Configuration (via RapidAPI)
+RAPIDAPI_KEY = os.environ.get('RAPIDAPI_KEY', '')
+USE_REAL_BREACH_API = os.environ.get('USE_REAL_BREACH_API', 'True').lower() == 'true'
 
 # Chatbot Settings
 CHATBOT_MAX_HISTORY = 10  # Maximum number of previous messages to include in context
@@ -214,6 +223,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
         'rest_framework.filters.OrderingFilter',
     ],
+    'EXCEPTION_HANDLER': 'googledorks.error_handling.custom_exception_handler',  # Custom error handling
 }
 
 # ==============================================================================
@@ -319,3 +329,26 @@ SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 # Email timeout (seconds)
 EMAIL_TIMEOUT = 10
+
+# ==============================================================================
+# TOR PROXY CONFIGURATION
+# ==============================================================================
+# Configuration for anonymous web scraping through Tor network
+
+# Enable/disable Tor proxy
+TOR_ENABLED = os.environ.get('TOR_ENABLED', 'False').lower() == 'true'
+
+# Tor proxy settings
+TOR_PROXY_HOST = os.environ.get('TOR_PROXY_HOST', 'localhost')
+TOR_PROXY_PORT = int(os.environ.get('TOR_PROXY_PORT', '9050'))
+
+# Tor control port (for circuit management)
+TOR_CONTROL_PORT = int(os.environ.get('TOR_CONTROL_PORT', '9051'))
+TOR_CONTROL_PASSWORD = os.environ.get('TOR_CONTROL_PASSWORD', '')
+
+# Circuit rotation settings
+TOR_CIRCUIT_TIMEOUT = int(os.environ.get('TOR_CIRCUIT_TIMEOUT', '60'))  # seconds
+TOR_MAX_RETRIES = int(os.environ.get('TOR_MAX_RETRIES', '3'))
+
+# Auto-rotate circuit after N requests (0 = disabled)
+TOR_AUTO_ROTATE_AFTER = int(os.environ.get('TOR_AUTO_ROTATE_AFTER', '0'))

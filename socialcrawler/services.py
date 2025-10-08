@@ -8,6 +8,7 @@ import asyncio
 from typing import Dict, List, Optional, Any
 from datetime import datetime
 from django.utils import timezone
+from django.conf import settings
 import requests
 from bs4 import BeautifulSoup
 import json
@@ -16,28 +17,162 @@ logger = logging.getLogger(__name__)
 
 
 class BaseCrawler:
-    """Base class for social media crawlers"""
+    """
+    Base class for social media crawlers with Tor support
     
-    def __init__(self, username: str, max_posts: int = 100):
+    Features:
+    - Automatic Tor integration when enabled
+    - Per-crawler Tor control via use_tor parameter
+    - Fallback to regular session if Tor fails
+    - Transparent request handling
+    
+    Usage:
+        # Use Tor based on settings.TOR_ENABLED
+        crawler = TwitterCrawler('username')
+        
+        # Force Tor on
+        crawler = TwitterCrawler('username', use_tor=True)
+        
+        # Force Tor off
+        crawler = TwitterCrawler('username', use_tor=False)
+    """
+    
+    def __init__(self, username: str, max_posts: int = 100, use_tor: bool = None):
+        """
+        Initialize crawler with optional Tor support
+        
+        Args:
+            username: Target username to crawl
+            max_posts: Maximum number of posts to retrieve
+            use_tor: Force Tor on/off. If None, uses settings.TOR_ENABLED
+        """
         self.username = username
         self.max_posts = max_posts
-        self.session = requests.Session()
+        
+        # Determine if Tor should be used
+        if use_tor is None:
+            # Auto-detect from Django settings
+            use_tor = getattr(settings, 'TOR_ENABLED', False)
+        
+        self.use_tor = use_tor
+        self.tor_service = None
+        
+        # Initialize session (with or without Tor)
+        if self.use_tor:
+            try:
+                from googledorks.services.tor_service import TorProxyService
+                self.tor_service = TorProxyService()
+                self.session = self.tor_service.get_session()
+                logger.info(f"🧅 Tor enabled for crawler: {username}")
+            except Exception as e:
+                logger.warning(f"Failed to initialize Tor, falling back to regular session: {e}")
+                self.session = requests.Session()
+                self.use_tor = False
+                self.tor_service = None
+        else:
+            self.session = requests.Session()
+            logger.debug(f"🌐 Regular session for crawler: {username}")
+        
+        # Set default headers
         self.session.headers.update({
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.5',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1'
         })
+    
+    def _make_request(self, url: str, method: str = 'GET', **kwargs) -> Optional[requests.Response]:
+        """
+        Make HTTP request with optional Tor support
+        
+        Args:
+            url: Target URL
+            method: HTTP method (GET, POST, etc.)
+            **kwargs: Additional arguments for requests
+        
+        Returns:
+            Response object or None if request fails
+        """
+        try:
+            if self.use_tor and self.tor_service:
+                # Use Tor service with automatic retry
+                logger.debug(f"🧅 Making Tor request to: {url}")
+                response = self.tor_service.request_with_retry(
+                    url, 
+                    method=method.upper(),
+                    **kwargs
+                )
+            else:
+                # Regular request
+                logger.debug(f"🌐 Making regular request to: {url}")
+                response = self.session.request(method, url, **kwargs)
+            
+            return response
+            
+        except Exception as e:
+            logger.error(f"Request failed for {url}: {e}")
+            return None
+    
+    def rotate_circuit(self) -> bool:
+        """
+        Rotate Tor circuit to get new IP
+        
+        Returns:
+            True if circuit rotated successfully, False otherwise
+        """
+        if self.use_tor and self.tor_service:
+            try:
+                success = self.tor_service.renew_circuit()
+                if success:
+                    logger.info("🔄 Tor circuit rotated successfully")
+                return success
+            except Exception as e:
+                logger.error(f"Failed to rotate Tor circuit: {e}")
+                return False
+        return False
+    
+    def get_current_ip(self) -> Optional[str]:
+        """
+        Get current exit IP address
+        
+        Returns:
+            IP address string or None
+        """
+        try:
+            if self.use_tor and self.tor_service:
+                result = self.tor_service.verify_tor_connection()
+                if result.get('success'):
+                    return result.get('ip')  # Changed from 'exit_ip' to 'ip'
+            else:
+                # Get real IP
+                response = requests.get('https://api.ipify.org?format=json', timeout=10)
+                return response.json().get('ip')
+        except Exception as e:
+            logger.error(f"Failed to get current IP: {e}")
+            return None
     
     async def crawl_profile(self) -> Optional[Dict[str, Any]]:
         """Crawl profile information - to be implemented by subclasses"""
-        raise NotImplementedError
+        raise NotImplementedError("Subclasses must implement crawl_profile()")
     
     async def crawl_posts(self) -> List[Dict[str, Any]]:
         """Crawl posts - to be implemented by subclasses"""
-        raise NotImplementedError
+        raise NotImplementedError("Subclasses must implement crawl_posts()")
     
     def close(self):
-        """Close the session"""
-        self.session.close()
-
+        """Close the session and cleanup"""
+        try:
+            if self.session:
+                self.session.close()
+            if self.tor_service:
+                # Tor service cleanup if needed
+                pass
+            logger.debug(f"Closed crawler session for {self.username}")
+        except Exception as e:
+            logger.error(f"Error closing crawler: {e}")
 
 class TwitterCrawler(BaseCrawler):
     """
@@ -48,8 +183,8 @@ class TwitterCrawler(BaseCrawler):
     - nitter instances
     """
     
-    def __init__(self, username: str, max_posts: int = 100, api_key: str = None):
-        super().__init__(username, max_posts)
+    def __init__(self, username: str, max_posts: int = 100, api_key: str = None, use_tor: bool = None):
+        super().__init__(username, max_posts, use_tor=use_tor)
         self.api_key = api_key
         self.base_url = "https://twitter.com"
     
@@ -76,6 +211,7 @@ class TwitterCrawler(BaseCrawler):
                 'website': '',
                 'joined_date': None,
                 'profile_url': f"{self.base_url}/{self.username}",
+                'platform': 'twitter',
                 'raw_data': {}
             }
             
@@ -105,8 +241,8 @@ class GitHubCrawler(BaseCrawler):
     No authentication required for public data
     """
     
-    def __init__(self, username: str, max_repos: int = 100, api_token: str = None):
-        super().__init__(username, max_repos)
+    def __init__(self, username: str, max_repos: int = 100, api_token: str = None, use_tor: bool = None):
+        super().__init__(username, max_repos, use_tor=use_tor)
         self.api_token = api_token
         self.base_url = "https://api.github.com"
         
@@ -125,20 +261,21 @@ class GitHubCrawler(BaseCrawler):
             data = response.json()
             
             profile_data = {
-                'username': data.get('login', ''),
-                'user_id': str(data.get('id', '')),
-                'display_name': data.get('name', ''),
-                'bio': data.get('bio', ''),
-                'avatar_url': data.get('avatar_url', ''),
+                'username': data.get('login') or '',
+                'user_id': str(data.get('id') or ''),
+                'display_name': data.get('name') or '',
+                'bio': data.get('bio') or '',
+                'avatar_url': data.get('avatar_url') or '',
                 'banner_url': '',
                 'followers_count': data.get('followers', 0),
                 'following_count': data.get('following', 0),
                 'posts_count': data.get('public_repos', 0),
                 'verified': False,
-                'location': data.get('location', ''),
-                'website': data.get('blog', ''),
+                'location': data.get('location') or '',
+                'website': data.get('blog') or '',
                 'joined_date': data.get('created_at', '').split('T')[0] if data.get('created_at') else None,
-                'profile_url': data.get('html_url', ''),
+                'profile_url': data.get('html_url') or '',
+                'platform': 'github',
                 'raw_data': data
             }
             
@@ -216,6 +353,7 @@ class LinkedInCrawler(BaseCrawler):
                 'website': '',
                 'joined_date': None,
                 'profile_url': f"https://linkedin.com/in/{self.username}",
+                'platform': 'linkedin',
                 'raw_data': {}
             }
             
@@ -236,8 +374,8 @@ class RedditCrawler(BaseCrawler):
     Reddit Crawler - Uses public Reddit API
     """
     
-    def __init__(self, username: str, max_posts: int = 100):
-        super().__init__(username, max_posts)
+    def __init__(self, username: str, max_posts: int = 100, use_tor: bool = None):
+        super().__init__(username, max_posts, use_tor=use_tor)
         self.base_url = "https://www.reddit.com"
     
     async def crawl_profile(self) -> Optional[Dict[str, Any]]:
@@ -250,20 +388,21 @@ class RedditCrawler(BaseCrawler):
             data = response.json()['data']
             
             profile_data = {
-                'username': data.get('name', ''),
-                'user_id': data.get('id', ''),
-                'display_name': data.get('subreddit', {}).get('title', ''),
-                'bio': data.get('subreddit', {}).get('public_description', ''),
-                'avatar_url': data.get('icon_img', ''),
-                'banner_url': data.get('subreddit', {}).get('banner_img', ''),
+                'username': data.get('name') or '',
+                'user_id': data.get('id') or '',
+                'display_name': data.get('subreddit', {}).get('title') or '',
+                'bio': data.get('subreddit', {}).get('public_description') or '',
+                'avatar_url': data.get('icon_img') or '',
+                'banner_url': data.get('subreddit', {}).get('banner_img') or '',
                 'followers_count': 0,  # Reddit doesn't provide this easily
                 'following_count': 0,
                 'posts_count': data.get('link_karma', 0) + data.get('comment_karma', 0),
                 'verified': data.get('verified', False),
                 'location': '',
                 'website': '',
-                'joined_date': datetime.fromtimestamp(data.get('created', 0)).date().isoformat(),
+                'joined_date': datetime.fromtimestamp(data.get('created', 0)).date().isoformat() if data.get('created') else None,
                 'profile_url': f"{self.base_url}/user/{self.username}",
+                'platform': 'reddit',
                 'raw_data': data
             }
             

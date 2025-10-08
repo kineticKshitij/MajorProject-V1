@@ -1,0 +1,94 @@
+# Tor Configuration File (torrc)
+# Configuration for anonymous web scraping proxy
+
+## Network Configuration
+
+# SOCKS proxy - main proxy port for applications
+# 0.0.0.0 allows connections from other containers
+SocksPort 0.0.0.0:9050
+
+# Control port for circuit management
+ControlPort 0.0.0.0:9051
+
+# Control port authentication
+# Generate new hash with: tor --hash-password your_password
+# Default password: torcontrol123 (CHANGE IN PRODUCTION!)
+HashedControlPassword 16:23C72EE0F68A1D9360D48969690420882081739C122594F8DAEDC85D9D
+
+## Data Storage
+
+# Directory for Tor state and cached data
+DataDirectory /var/lib/tor
+
+## Circuit Configuration
+
+# How long to use the same circuit (in seconds)
+# Lower = more IP rotation, but slower
+# Higher = faster, but less anonymity
+MaxCircuitDirtiness 60
+
+# Circuit build timeout (in seconds)
+CircuitBuildTimeout 60
+
+# Number of circuits to pre-build
+NumEntryGuards 3
+
+## Exit Node Configuration
+
+# Allow all exit connections (needed for web scraping)
+ExitPolicy accept *:*
+
+# Optional: Restrict to specific countries
+# Uncomment to use only US/UK/DE exit nodes
+# ExitNodes {us},{uk},{de}
+# StrictNodes 1
+
+# Optional: Restrict entry nodes
+# EntryNodes {us}
+# StrictNodes 1
+
+## DNS Configuration
+
+# Route DNS queries through Tor
+DNSPort 5353
+
+# Automatically map .onion addresses
+AutomapHostsOnResolve 1
+
+## Performance Tuning
+
+# Connection padding to prevent traffic analysis
+ConnectionPadding auto
+
+# Reduce circuit timeout for faster responses
+LearnCircuitBuildTimeout 1
+
+# Connection pooling
+KeepAlivePeriod 60
+
+## Security Settings
+
+# Disable directory authorities if running as client
+FetchDirInfoExtraEarly 0
+
+## Logging
+
+# Log level: debug, info, notice, warn, err
+Log notice stdout
+
+# Log circuit build events
+SafeLogging 0
+
+## Onion Service Support (Optional)
+
+# Enable if you want to access .onion sites
+# No additional configuration needed - it just works!
+
+## Advanced Options
+
+# Optimistic data - send data before circuit is fully built
+# Makes connections faster but less anonymous
+OptimisticData auto
+
+# Client only - don't allow this node to be a relay
+SocksPolicy accept 0.0.0.0/0
